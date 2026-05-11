@@ -1,0 +1,573 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#10131f" />
+      <stop offset="0.42" stop-color="#171426" />
+      <stop offset="1" stop-color="#071a26" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff2b2" />
+      <stop offset="0.52" stop-color="#f6c866" />
+      <stop offset="1" stop-color="#b77722" />
+    </linearGradient>
+    <linearGradient id="redBall" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff96a0" />
+      <stop offset="0.6" stop-color="#e8324c" />
+      <stop offset="1" stop-color="#891628" />
+    </linearGradient>
+    <linearGradient id="blueBall" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#90c2ff" />
+      <stop offset="0.6" stop-color="#2f75ff" />
+      <stop offset="1" stop-color="#133494" />
+    </linearGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="26" stdDeviation="22" flood-color="#000000" flood-opacity="0.32" />
+    </filter>
+    <pattern id="grid" width="84" height="84" patternUnits="userSpaceOnUse">
+      <path d="M84 0H0V84" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.06" />
+    </pattern>
+    <style>
+      .sans {
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+      }
+      .serif {
+        font-family: "Songti SC", "SimSun", "Noto Serif CJK SC", serif;
+      }
+      .small {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+      .tiny {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+    </style>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#bg)" />
+  <rect width="1080" height="1920" fill="url(#grid)" />
+  <path d="M-70 316C214 246 428 276 611 386C784 491 934 506 1162 410" fill="none" stroke="#4fd6bd" stroke-width="3" opacity="0.38" />
+  <path d="M-44 1002C178 894 378 914 565 1062C736 1198 902 1232 1146 1090" fill="none" stroke="#f6c866" stroke-width="3" opacity="0.32" />
+  <path d="M78 232L202 348L354 300L491 438L638 364L812 478L982 418" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.18" />
+  <path d="M128 1382L282 1280L406 1362L528 1264L704 1394L906 1286" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.16" />
+
+  <g opacity="0.55">
+    <circle cx="78" cy="232" r="5" fill="#f6c866" />
+    <circle cx="202" cy="348" r="4" fill="#ffffff" />
+    <circle cx="354" cy="300" r="5" fill="#4fd6bd" />
+    <circle cx="491" cy="438" r="4" fill="#ffffff" />
+    <circle cx="638" cy="364" r="5" fill="#f6c866" />
+    <circle cx="812" cy="478" r="4" fill="#ffffff" />
+    <circle cx="982" cy="418" r="5" fill="#4fd6bd" />
+    <circle cx="128" cy="1382" r="5" fill="#4fd6bd" />
+    <circle cx="282" cy="1280" r="4" fill="#ffffff" />
+    <circle cx="406" cy="1362" r="5" fill="#f6c866" />
+    <circle cx="528" cy="1264" r="4" fill="#ffffff" />
+    <circle cx="704" cy="1394" r="5" fill="#4fd6bd" />
+    <circle cx="906" cy="1286" r="4" fill="#ffffff" />
+  </g>
+
+  <g transform="translate(74 72)">
+    <rect x="0" y="0" width="932" height="1768" rx="44" fill="#121827" opacity="0.9" stroke="#f6c866" stroke-opacity="0.34" />
+    <rect x="34" y="34" width="864" height="1700" rx="32" fill="none" stroke="#ffffff" stroke-opacity="0.1" />
+  </g>
+
+  <g transform="translate(118 132)" class="sans">
+    <rect x="0" y="0" width="318" height="58" rx="29" fill="#f6c866" fill-opacity="0.14" stroke="#f6c866" stroke-opacity="0.42" />
+    <text x="34" y="38" fill="#fff2b2" font-size="25" font-weight="800">BAZI DAILY FORTUNE</text>
+    <rect x="512" y="0" width="332" height="58" rx="29" fill="#ffffff" fill-opacity="0.06" stroke="#ffffff" stroke-opacity="0.14" />
+    <circle cx="546" cy="29" r="20" fill="#f6c866" fill-opacity="0.16" stroke="#f6c866" stroke-opacity="0.42" />
+    <path d="M546 14l4.6 10.4l11.2 1.2l-8.4 7.5l2.4 11L546 38.4l-9.8 5.7l2.4-11l-8.4-7.5l11.2-1.2L546 14z" fill="#f6c866" />
+    <text x="812" y="38" text-anchor="end" fill="#fffaf0" font-size="28" font-weight="900">The Chosen One</text>
+    <path d="M0 96H844" stroke="#ffffff" stroke-opacity="0.12" stroke-width="2" />
+  </g>
+
+  <g transform="translate(118 392)">
+    <text class="serif" x="0" y="0" fill="url(#gold)" font-size="118" font-weight="900">今晚这组号</text>
+    <text class="serif" x="0" y="142" fill="#fffaf0" font-size="118" font-weight="900">也许在等你</text>
+    <text class="sans" x="0" y="224" fill="#dce4f5" font-size="34" font-weight="700">把生辰八字交给流日五行，看看今日气运</text>
+    <text class="sans" x="0" y="276" fill="#dce4f5" font-size="34" font-weight="700">会把哪一组双色球灵感号推到你面前。</text>
+  </g>
+
+  <g transform="translate(118 720)" filter="url(#softShadow)">
+    <rect x="0" y="0" width="844" height="322" rx="28" fill="#1f2739" stroke="#ffffff" stroke-opacity="0.12" />
+    <rect x="26" y="28" width="792" height="266" rx="22" fill="#161d2d" stroke="#4fd6bd" stroke-opacity="0.24" />
+    <text class="sans" x="58" y="88" fill="#4fd6bd" font-size="28" font-weight="900">今日可查</text>
+    <text class="sans" x="58" y="146" fill="#fffaf0" font-size="42" font-weight="900">吉凶走势 · 宜忌提醒 · 灵感选号</text>
+    <text class="sans" x="58" y="202" fill="#aeb7c9" font-size="30" font-weight="700">不是玄乎地猜，是把命盘、流日、五行喜忌</text>
+    <text class="sans" x="58" y="250" fill="#aeb7c9" font-size="30" font-weight="700">都摊开给你看。</text>
+  </g>
+
+  <g transform="translate(136 1114)" class="sans">
+    <g filter="url(#softShadow)">
+      <circle cx="64" cy="64" r="64" fill="url(#redBall)" />
+      <circle cx="204" cy="64" r="64" fill="url(#redBall)" />
+      <circle cx="344" cy="64" r="64" fill="url(#redBall)" />
+      <circle cx="484" cy="64" r="64" fill="url(#redBall)" />
+      <circle cx="624" cy="64" r="64" fill="url(#redBall)" />
+      <circle cx="764" cy="64" r="64" fill="url(#blueBall)" />
+    </g>
+    <text x="64" y="78" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="900">?</text>
+    <text x="204" y="78" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="900">?</text>
+    <text x="344" y="78" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="900">?</text>
+    <text x="484" y="78" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="900">?</text>
+    <text x="624" y="78" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="900">?</text>
+    <text x="764" y="78" text-anchor="middle" fill="#ffffff" font-size="42" font-weight="900">?</text>
+    <text x="0" y="178" fill="#fff2b2" font-size="32" font-weight="900">属于今天的数字，不妨亲自看一眼。</text>
+  </g>
+
+  <g transform="translate(118 1376)" filter="url(#softShadow)">
+    <rect x="0" y="0" width="844" height="330" rx="34" fill="#f8fafc" />
+    <rect x="26" y="26" width="278" height="278" rx="26" fill="#ffffff" stroke="#10131f" stroke-opacity="0.12" />
+    <g transform="translate(43 43) scale(0.616162)" aria-label="二维码">
+      <rect width="396" height="396" fill="#ffffff"/>
+      <defs>
+      <rect id="p" width="12" height="12" />
+      </defs>
+      <g>
+      <use x="24" y="24" xlink:href="#p" fill="#000000" />
+      <use x="36" y="24" xlink:href="#p" fill="#000000" />
+      <use x="48" y="24" xlink:href="#p" fill="#000000" />
+      <use x="60" y="24" xlink:href="#p" fill="#000000" />
+      <use x="72" y="24" xlink:href="#p" fill="#000000" />
+      <use x="84" y="24" xlink:href="#p" fill="#000000" />
+      <use x="96" y="24" xlink:href="#p" fill="#000000" />
+      <use x="120" y="24" xlink:href="#p" fill="#000000" />
+      <use x="132" y="24" xlink:href="#p" fill="#000000" />
+      <use x="144" y="24" xlink:href="#p" fill="#000000" />
+      <use x="156" y="24" xlink:href="#p" fill="#000000" />
+      <use x="192" y="24" xlink:href="#p" fill="#000000" />
+      <use x="204" y="24" xlink:href="#p" fill="#000000" />
+      <use x="216" y="24" xlink:href="#p" fill="#000000" />
+      <use x="264" y="24" xlink:href="#p" fill="#000000" />
+      <use x="288" y="24" xlink:href="#p" fill="#000000" />
+      <use x="300" y="24" xlink:href="#p" fill="#000000" />
+      <use x="312" y="24" xlink:href="#p" fill="#000000" />
+      <use x="324" y="24" xlink:href="#p" fill="#000000" />
+      <use x="336" y="24" xlink:href="#p" fill="#000000" />
+      <use x="348" y="24" xlink:href="#p" fill="#000000" />
+      <use x="360" y="24" xlink:href="#p" fill="#000000" />
+      <use x="24" y="36" xlink:href="#p" fill="#000000" />
+      <use x="96" y="36" xlink:href="#p" fill="#000000" />
+      <use x="132" y="36" xlink:href="#p" fill="#000000" />
+      <use x="144" y="36" xlink:href="#p" fill="#000000" />
+      <use x="168" y="36" xlink:href="#p" fill="#000000" />
+      <use x="192" y="36" xlink:href="#p" fill="#000000" />
+      <use x="216" y="36" xlink:href="#p" fill="#000000" />
+      <use x="240" y="36" xlink:href="#p" fill="#000000" />
+      <use x="252" y="36" xlink:href="#p" fill="#000000" />
+      <use x="264" y="36" xlink:href="#p" fill="#000000" />
+      <use x="288" y="36" xlink:href="#p" fill="#000000" />
+      <use x="360" y="36" xlink:href="#p" fill="#000000" />
+      <use x="24" y="48" xlink:href="#p" fill="#000000" />
+      <use x="48" y="48" xlink:href="#p" fill="#000000" />
+      <use x="60" y="48" xlink:href="#p" fill="#000000" />
+      <use x="72" y="48" xlink:href="#p" fill="#000000" />
+      <use x="96" y="48" xlink:href="#p" fill="#000000" />
+      <use x="132" y="48" xlink:href="#p" fill="#000000" />
+      <use x="144" y="48" xlink:href="#p" fill="#000000" />
+      <use x="156" y="48" xlink:href="#p" fill="#000000" />
+      <use x="168" y="48" xlink:href="#p" fill="#000000" />
+      <use x="192" y="48" xlink:href="#p" fill="#000000" />
+      <use x="204" y="48" xlink:href="#p" fill="#000000" />
+      <use x="240" y="48" xlink:href="#p" fill="#000000" />
+      <use x="264" y="48" xlink:href="#p" fill="#000000" />
+      <use x="288" y="48" xlink:href="#p" fill="#000000" />
+      <use x="312" y="48" xlink:href="#p" fill="#000000" />
+      <use x="324" y="48" xlink:href="#p" fill="#000000" />
+      <use x="336" y="48" xlink:href="#p" fill="#000000" />
+      <use x="360" y="48" xlink:href="#p" fill="#000000" />
+      <use x="24" y="60" xlink:href="#p" fill="#000000" />
+      <use x="48" y="60" xlink:href="#p" fill="#000000" />
+      <use x="60" y="60" xlink:href="#p" fill="#000000" />
+      <use x="72" y="60" xlink:href="#p" fill="#000000" />
+      <use x="96" y="60" xlink:href="#p" fill="#000000" />
+      <use x="120" y="60" xlink:href="#p" fill="#000000" />
+      <use x="132" y="60" xlink:href="#p" fill="#000000" />
+      <use x="144" y="60" xlink:href="#p" fill="#000000" />
+      <use x="168" y="60" xlink:href="#p" fill="#000000" />
+      <use x="204" y="60" xlink:href="#p" fill="#000000" />
+      <use x="240" y="60" xlink:href="#p" fill="#000000" />
+      <use x="252" y="60" xlink:href="#p" fill="#000000" />
+      <use x="264" y="60" xlink:href="#p" fill="#000000" />
+      <use x="288" y="60" xlink:href="#p" fill="#000000" />
+      <use x="312" y="60" xlink:href="#p" fill="#000000" />
+      <use x="324" y="60" xlink:href="#p" fill="#000000" />
+      <use x="336" y="60" xlink:href="#p" fill="#000000" />
+      <use x="360" y="60" xlink:href="#p" fill="#000000" />
+      <use x="24" y="72" xlink:href="#p" fill="#000000" />
+      <use x="48" y="72" xlink:href="#p" fill="#000000" />
+      <use x="60" y="72" xlink:href="#p" fill="#000000" />
+      <use x="72" y="72" xlink:href="#p" fill="#000000" />
+      <use x="96" y="72" xlink:href="#p" fill="#000000" />
+      <use x="132" y="72" xlink:href="#p" fill="#000000" />
+      <use x="168" y="72" xlink:href="#p" fill="#000000" />
+      <use x="180" y="72" xlink:href="#p" fill="#000000" />
+      <use x="228" y="72" xlink:href="#p" fill="#000000" />
+      <use x="252" y="72" xlink:href="#p" fill="#000000" />
+      <use x="288" y="72" xlink:href="#p" fill="#000000" />
+      <use x="312" y="72" xlink:href="#p" fill="#000000" />
+      <use x="324" y="72" xlink:href="#p" fill="#000000" />
+      <use x="336" y="72" xlink:href="#p" fill="#000000" />
+      <use x="360" y="72" xlink:href="#p" fill="#000000" />
+      <use x="24" y="84" xlink:href="#p" fill="#000000" />
+      <use x="96" y="84" xlink:href="#p" fill="#000000" />
+      <use x="132" y="84" xlink:href="#p" fill="#000000" />
+      <use x="144" y="84" xlink:href="#p" fill="#000000" />
+      <use x="156" y="84" xlink:href="#p" fill="#000000" />
+      <use x="168" y="84" xlink:href="#p" fill="#000000" />
+      <use x="180" y="84" xlink:href="#p" fill="#000000" />
+      <use x="192" y="84" xlink:href="#p" fill="#000000" />
+      <use x="216" y="84" xlink:href="#p" fill="#000000" />
+      <use x="240" y="84" xlink:href="#p" fill="#000000" />
+      <use x="252" y="84" xlink:href="#p" fill="#000000" />
+      <use x="264" y="84" xlink:href="#p" fill="#000000" />
+      <use x="288" y="84" xlink:href="#p" fill="#000000" />
+      <use x="360" y="84" xlink:href="#p" fill="#000000" />
+      <use x="24" y="96" xlink:href="#p" fill="#000000" />
+      <use x="36" y="96" xlink:href="#p" fill="#000000" />
+      <use x="48" y="96" xlink:href="#p" fill="#000000" />
+      <use x="60" y="96" xlink:href="#p" fill="#000000" />
+      <use x="72" y="96" xlink:href="#p" fill="#000000" />
+      <use x="84" y="96" xlink:href="#p" fill="#000000" />
+      <use x="96" y="96" xlink:href="#p" fill="#000000" />
+      <use x="120" y="96" xlink:href="#p" fill="#000000" />
+      <use x="144" y="96" xlink:href="#p" fill="#000000" />
+      <use x="168" y="96" xlink:href="#p" fill="#000000" />
+      <use x="192" y="96" xlink:href="#p" fill="#000000" />
+      <use x="216" y="96" xlink:href="#p" fill="#000000" />
+      <use x="240" y="96" xlink:href="#p" fill="#000000" />
+      <use x="264" y="96" xlink:href="#p" fill="#000000" />
+      <use x="288" y="96" xlink:href="#p" fill="#000000" />
+      <use x="300" y="96" xlink:href="#p" fill="#000000" />
+      <use x="312" y="96" xlink:href="#p" fill="#000000" />
+      <use x="324" y="96" xlink:href="#p" fill="#000000" />
+      <use x="336" y="96" xlink:href="#p" fill="#000000" />
+      <use x="348" y="96" xlink:href="#p" fill="#000000" />
+      <use x="360" y="96" xlink:href="#p" fill="#000000" />
+      <use x="132" y="108" xlink:href="#p" fill="#000000" />
+      <use x="156" y="108" xlink:href="#p" fill="#000000" />
+      <use x="192" y="108" xlink:href="#p" fill="#000000" />
+      <use x="216" y="108" xlink:href="#p" fill="#000000" />
+      <use x="252" y="108" xlink:href="#p" fill="#000000" />
+      <use x="264" y="108" xlink:href="#p" fill="#000000" />
+      <use x="48" y="120" xlink:href="#p" fill="#000000" />
+      <use x="72" y="120" xlink:href="#p" fill="#000000" />
+      <use x="84" y="120" xlink:href="#p" fill="#000000" />
+      <use x="96" y="120" xlink:href="#p" fill="#000000" />
+      <use x="120" y="120" xlink:href="#p" fill="#000000" />
+      <use x="144" y="120" xlink:href="#p" fill="#000000" />
+      <use x="168" y="120" xlink:href="#p" fill="#000000" />
+      <use x="192" y="120" xlink:href="#p" fill="#000000" />
+      <use x="216" y="120" xlink:href="#p" fill="#000000" />
+      <use x="264" y="120" xlink:href="#p" fill="#000000" />
+      <use x="276" y="120" xlink:href="#p" fill="#000000" />
+      <use x="324" y="120" xlink:href="#p" fill="#000000" />
+      <use x="360" y="120" xlink:href="#p" fill="#000000" />
+      <use x="72" y="132" xlink:href="#p" fill="#000000" />
+      <use x="120" y="132" xlink:href="#p" fill="#000000" />
+      <use x="144" y="132" xlink:href="#p" fill="#000000" />
+      <use x="156" y="132" xlink:href="#p" fill="#000000" />
+      <use x="168" y="132" xlink:href="#p" fill="#000000" />
+      <use x="180" y="132" xlink:href="#p" fill="#000000" />
+      <use x="192" y="132" xlink:href="#p" fill="#000000" />
+      <use x="252" y="132" xlink:href="#p" fill="#000000" />
+      <use x="264" y="132" xlink:href="#p" fill="#000000" />
+      <use x="276" y="132" xlink:href="#p" fill="#000000" />
+      <use x="312" y="132" xlink:href="#p" fill="#000000" />
+      <use x="324" y="132" xlink:href="#p" fill="#000000" />
+      <use x="336" y="132" xlink:href="#p" fill="#000000" />
+      <use x="360" y="132" xlink:href="#p" fill="#000000" />
+      <use x="36" y="144" xlink:href="#p" fill="#000000" />
+      <use x="60" y="144" xlink:href="#p" fill="#000000" />
+      <use x="72" y="144" xlink:href="#p" fill="#000000" />
+      <use x="96" y="144" xlink:href="#p" fill="#000000" />
+      <use x="120" y="144" xlink:href="#p" fill="#000000" />
+      <use x="144" y="144" xlink:href="#p" fill="#000000" />
+      <use x="216" y="144" xlink:href="#p" fill="#000000" />
+      <use x="228" y="144" xlink:href="#p" fill="#000000" />
+      <use x="252" y="144" xlink:href="#p" fill="#000000" />
+      <use x="264" y="144" xlink:href="#p" fill="#000000" />
+      <use x="276" y="144" xlink:href="#p" fill="#000000" />
+      <use x="324" y="144" xlink:href="#p" fill="#000000" />
+      <use x="336" y="144" xlink:href="#p" fill="#000000" />
+      <use x="348" y="144" xlink:href="#p" fill="#000000" />
+      <use x="360" y="144" xlink:href="#p" fill="#000000" />
+      <use x="36" y="156" xlink:href="#p" fill="#000000" />
+      <use x="84" y="156" xlink:href="#p" fill="#000000" />
+      <use x="108" y="156" xlink:href="#p" fill="#000000" />
+      <use x="132" y="156" xlink:href="#p" fill="#000000" />
+      <use x="144" y="156" xlink:href="#p" fill="#000000" />
+      <use x="156" y="156" xlink:href="#p" fill="#000000" />
+      <use x="168" y="156" xlink:href="#p" fill="#000000" />
+      <use x="180" y="156" xlink:href="#p" fill="#000000" />
+      <use x="216" y="156" xlink:href="#p" fill="#000000" />
+      <use x="264" y="156" xlink:href="#p" fill="#000000" />
+      <use x="276" y="156" xlink:href="#p" fill="#000000" />
+      <use x="288" y="156" xlink:href="#p" fill="#000000" />
+      <use x="312" y="156" xlink:href="#p" fill="#000000" />
+      <use x="348" y="156" xlink:href="#p" fill="#000000" />
+      <use x="48" y="168" xlink:href="#p" fill="#000000" />
+      <use x="72" y="168" xlink:href="#p" fill="#000000" />
+      <use x="96" y="168" xlink:href="#p" fill="#000000" />
+      <use x="108" y="168" xlink:href="#p" fill="#000000" />
+      <use x="168" y="168" xlink:href="#p" fill="#000000" />
+      <use x="216" y="168" xlink:href="#p" fill="#000000" />
+      <use x="228" y="168" xlink:href="#p" fill="#000000" />
+      <use x="240" y="168" xlink:href="#p" fill="#000000" />
+      <use x="252" y="168" xlink:href="#p" fill="#000000" />
+      <use x="264" y="168" xlink:href="#p" fill="#000000" />
+      <use x="276" y="168" xlink:href="#p" fill="#000000" />
+      <use x="288" y="168" xlink:href="#p" fill="#000000" />
+      <use x="36" y="180" xlink:href="#p" fill="#000000" />
+      <use x="48" y="180" xlink:href="#p" fill="#000000" />
+      <use x="120" y="180" xlink:href="#p" fill="#000000" />
+      <use x="132" y="180" xlink:href="#p" fill="#000000" />
+      <use x="144" y="180" xlink:href="#p" fill="#000000" />
+      <use x="156" y="180" xlink:href="#p" fill="#000000" />
+      <use x="180" y="180" xlink:href="#p" fill="#000000" />
+      <use x="204" y="180" xlink:href="#p" fill="#000000" />
+      <use x="216" y="180" xlink:href="#p" fill="#000000" />
+      <use x="228" y="180" xlink:href="#p" fill="#000000" />
+      <use x="240" y="180" xlink:href="#p" fill="#000000" />
+      <use x="264" y="180" xlink:href="#p" fill="#000000" />
+      <use x="276" y="180" xlink:href="#p" fill="#000000" />
+      <use x="288" y="180" xlink:href="#p" fill="#000000" />
+      <use x="300" y="180" xlink:href="#p" fill="#000000" />
+      <use x="324" y="180" xlink:href="#p" fill="#000000" />
+      <use x="336" y="180" xlink:href="#p" fill="#000000" />
+      <use x="348" y="180" xlink:href="#p" fill="#000000" />
+      <use x="360" y="180" xlink:href="#p" fill="#000000" />
+      <use x="24" y="192" xlink:href="#p" fill="#000000" />
+      <use x="36" y="192" xlink:href="#p" fill="#000000" />
+      <use x="84" y="192" xlink:href="#p" fill="#000000" />
+      <use x="96" y="192" xlink:href="#p" fill="#000000" />
+      <use x="108" y="192" xlink:href="#p" fill="#000000" />
+      <use x="120" y="192" xlink:href="#p" fill="#000000" />
+      <use x="132" y="192" xlink:href="#p" fill="#000000" />
+      <use x="180" y="192" xlink:href="#p" fill="#000000" />
+      <use x="264" y="192" xlink:href="#p" fill="#000000" />
+      <use x="288" y="192" xlink:href="#p" fill="#000000" />
+      <use x="336" y="192" xlink:href="#p" fill="#000000" />
+      <use x="348" y="192" xlink:href="#p" fill="#000000" />
+      <use x="360" y="192" xlink:href="#p" fill="#000000" />
+      <use x="24" y="204" xlink:href="#p" fill="#000000" />
+      <use x="48" y="204" xlink:href="#p" fill="#000000" />
+      <use x="84" y="204" xlink:href="#p" fill="#000000" />
+      <use x="108" y="204" xlink:href="#p" fill="#000000" />
+      <use x="120" y="204" xlink:href="#p" fill="#000000" />
+      <use x="144" y="204" xlink:href="#p" fill="#000000" />
+      <use x="156" y="204" xlink:href="#p" fill="#000000" />
+      <use x="180" y="204" xlink:href="#p" fill="#000000" />
+      <use x="192" y="204" xlink:href="#p" fill="#000000" />
+      <use x="204" y="204" xlink:href="#p" fill="#000000" />
+      <use x="216" y="204" xlink:href="#p" fill="#000000" />
+      <use x="228" y="204" xlink:href="#p" fill="#000000" />
+      <use x="252" y="204" xlink:href="#p" fill="#000000" />
+      <use x="264" y="204" xlink:href="#p" fill="#000000" />
+      <use x="300" y="204" xlink:href="#p" fill="#000000" />
+      <use x="312" y="204" xlink:href="#p" fill="#000000" />
+      <use x="348" y="204" xlink:href="#p" fill="#000000" />
+      <use x="360" y="204" xlink:href="#p" fill="#000000" />
+      <use x="24" y="216" xlink:href="#p" fill="#000000" />
+      <use x="36" y="216" xlink:href="#p" fill="#000000" />
+      <use x="48" y="216" xlink:href="#p" fill="#000000" />
+      <use x="60" y="216" xlink:href="#p" fill="#000000" />
+      <use x="72" y="216" xlink:href="#p" fill="#000000" />
+      <use x="84" y="216" xlink:href="#p" fill="#000000" />
+      <use x="96" y="216" xlink:href="#p" fill="#000000" />
+      <use x="132" y="216" xlink:href="#p" fill="#000000" />
+      <use x="144" y="216" xlink:href="#p" fill="#000000" />
+      <use x="192" y="216" xlink:href="#p" fill="#000000" />
+      <use x="204" y="216" xlink:href="#p" fill="#000000" />
+      <use x="288" y="216" xlink:href="#p" fill="#000000" />
+      <use x="300" y="216" xlink:href="#p" fill="#000000" />
+      <use x="312" y="216" xlink:href="#p" fill="#000000" />
+      <use x="324" y="216" xlink:href="#p" fill="#000000" />
+      <use x="348" y="216" xlink:href="#p" fill="#000000" />
+      <use x="36" y="228" xlink:href="#p" fill="#000000" />
+      <use x="60" y="228" xlink:href="#p" fill="#000000" />
+      <use x="72" y="228" xlink:href="#p" fill="#000000" />
+      <use x="132" y="228" xlink:href="#p" fill="#000000" />
+      <use x="144" y="228" xlink:href="#p" fill="#000000" />
+      <use x="252" y="228" xlink:href="#p" fill="#000000" />
+      <use x="300" y="228" xlink:href="#p" fill="#000000" />
+      <use x="336" y="228" xlink:href="#p" fill="#000000" />
+      <use x="360" y="228" xlink:href="#p" fill="#000000" />
+      <use x="24" y="240" xlink:href="#p" fill="#000000" />
+      <use x="48" y="240" xlink:href="#p" fill="#000000" />
+      <use x="60" y="240" xlink:href="#p" fill="#000000" />
+      <use x="84" y="240" xlink:href="#p" fill="#000000" />
+      <use x="96" y="240" xlink:href="#p" fill="#000000" />
+      <use x="132" y="240" xlink:href="#p" fill="#000000" />
+      <use x="144" y="240" xlink:href="#p" fill="#000000" />
+      <use x="156" y="240" xlink:href="#p" fill="#000000" />
+      <use x="168" y="240" xlink:href="#p" fill="#000000" />
+      <use x="216" y="240" xlink:href="#p" fill="#000000" />
+      <use x="228" y="240" xlink:href="#p" fill="#000000" />
+      <use x="240" y="240" xlink:href="#p" fill="#000000" />
+      <use x="300" y="240" xlink:href="#p" fill="#000000" />
+      <use x="312" y="240" xlink:href="#p" fill="#000000" />
+      <use x="348" y="240" xlink:href="#p" fill="#000000" />
+      <use x="360" y="240" xlink:href="#p" fill="#000000" />
+      <use x="36" y="252" xlink:href="#p" fill="#000000" />
+      <use x="72" y="252" xlink:href="#p" fill="#000000" />
+      <use x="108" y="252" xlink:href="#p" fill="#000000" />
+      <use x="144" y="252" xlink:href="#p" fill="#000000" />
+      <use x="156" y="252" xlink:href="#p" fill="#000000" />
+      <use x="180" y="252" xlink:href="#p" fill="#000000" />
+      <use x="252" y="252" xlink:href="#p" fill="#000000" />
+      <use x="300" y="252" xlink:href="#p" fill="#000000" />
+      <use x="324" y="252" xlink:href="#p" fill="#000000" />
+      <use x="360" y="252" xlink:href="#p" fill="#000000" />
+      <use x="24" y="264" xlink:href="#p" fill="#000000" />
+      <use x="60" y="264" xlink:href="#p" fill="#000000" />
+      <use x="96" y="264" xlink:href="#p" fill="#000000" />
+      <use x="168" y="264" xlink:href="#p" fill="#000000" />
+      <use x="180" y="264" xlink:href="#p" fill="#000000" />
+      <use x="192" y="264" xlink:href="#p" fill="#000000" />
+      <use x="240" y="264" xlink:href="#p" fill="#000000" />
+      <use x="264" y="264" xlink:href="#p" fill="#000000" />
+      <use x="276" y="264" xlink:href="#p" fill="#000000" />
+      <use x="288" y="264" xlink:href="#p" fill="#000000" />
+      <use x="300" y="264" xlink:href="#p" fill="#000000" />
+      <use x="312" y="264" xlink:href="#p" fill="#000000" />
+      <use x="336" y="264" xlink:href="#p" fill="#000000" />
+      <use x="348" y="264" xlink:href="#p" fill="#000000" />
+      <use x="120" y="276" xlink:href="#p" fill="#000000" />
+      <use x="156" y="276" xlink:href="#p" fill="#000000" />
+      <use x="192" y="276" xlink:href="#p" fill="#000000" />
+      <use x="216" y="276" xlink:href="#p" fill="#000000" />
+      <use x="252" y="276" xlink:href="#p" fill="#000000" />
+      <use x="264" y="276" xlink:href="#p" fill="#000000" />
+      <use x="312" y="276" xlink:href="#p" fill="#000000" />
+      <use x="324" y="276" xlink:href="#p" fill="#000000" />
+      <use x="336" y="276" xlink:href="#p" fill="#000000" />
+      <use x="348" y="276" xlink:href="#p" fill="#000000" />
+      <use x="360" y="276" xlink:href="#p" fill="#000000" />
+      <use x="24" y="288" xlink:href="#p" fill="#000000" />
+      <use x="36" y="288" xlink:href="#p" fill="#000000" />
+      <use x="48" y="288" xlink:href="#p" fill="#000000" />
+      <use x="60" y="288" xlink:href="#p" fill="#000000" />
+      <use x="72" y="288" xlink:href="#p" fill="#000000" />
+      <use x="84" y="288" xlink:href="#p" fill="#000000" />
+      <use x="96" y="288" xlink:href="#p" fill="#000000" />
+      <use x="132" y="288" xlink:href="#p" fill="#000000" />
+      <use x="156" y="288" xlink:href="#p" fill="#000000" />
+      <use x="168" y="288" xlink:href="#p" fill="#000000" />
+      <use x="204" y="288" xlink:href="#p" fill="#000000" />
+      <use x="216" y="288" xlink:href="#p" fill="#000000" />
+      <use x="228" y="288" xlink:href="#p" fill="#000000" />
+      <use x="252" y="288" xlink:href="#p" fill="#000000" />
+      <use x="264" y="288" xlink:href="#p" fill="#000000" />
+      <use x="288" y="288" xlink:href="#p" fill="#000000" />
+      <use x="312" y="288" xlink:href="#p" fill="#000000" />
+      <use x="324" y="288" xlink:href="#p" fill="#000000" />
+      <use x="336" y="288" xlink:href="#p" fill="#000000" />
+      <use x="360" y="288" xlink:href="#p" fill="#000000" />
+      <use x="24" y="300" xlink:href="#p" fill="#000000" />
+      <use x="96" y="300" xlink:href="#p" fill="#000000" />
+      <use x="120" y="300" xlink:href="#p" fill="#000000" />
+      <use x="156" y="300" xlink:href="#p" fill="#000000" />
+      <use x="168" y="300" xlink:href="#p" fill="#000000" />
+      <use x="180" y="300" xlink:href="#p" fill="#000000" />
+      <use x="192" y="300" xlink:href="#p" fill="#000000" />
+      <use x="204" y="300" xlink:href="#p" fill="#000000" />
+      <use x="216" y="300" xlink:href="#p" fill="#000000" />
+      <use x="228" y="300" xlink:href="#p" fill="#000000" />
+      <use x="264" y="300" xlink:href="#p" fill="#000000" />
+      <use x="312" y="300" xlink:href="#p" fill="#000000" />
+      <use x="360" y="300" xlink:href="#p" fill="#000000" />
+      <use x="24" y="312" xlink:href="#p" fill="#000000" />
+      <use x="48" y="312" xlink:href="#p" fill="#000000" />
+      <use x="60" y="312" xlink:href="#p" fill="#000000" />
+      <use x="72" y="312" xlink:href="#p" fill="#000000" />
+      <use x="96" y="312" xlink:href="#p" fill="#000000" />
+      <use x="120" y="312" xlink:href="#p" fill="#000000" />
+      <use x="132" y="312" xlink:href="#p" fill="#000000" />
+      <use x="156" y="312" xlink:href="#p" fill="#000000" />
+      <use x="168" y="312" xlink:href="#p" fill="#000000" />
+      <use x="228" y="312" xlink:href="#p" fill="#000000" />
+      <use x="240" y="312" xlink:href="#p" fill="#000000" />
+      <use x="264" y="312" xlink:href="#p" fill="#000000" />
+      <use x="276" y="312" xlink:href="#p" fill="#000000" />
+      <use x="288" y="312" xlink:href="#p" fill="#000000" />
+      <use x="300" y="312" xlink:href="#p" fill="#000000" />
+      <use x="312" y="312" xlink:href="#p" fill="#000000" />
+      <use x="360" y="312" xlink:href="#p" fill="#000000" />
+      <use x="24" y="324" xlink:href="#p" fill="#000000" />
+      <use x="48" y="324" xlink:href="#p" fill="#000000" />
+      <use x="60" y="324" xlink:href="#p" fill="#000000" />
+      <use x="72" y="324" xlink:href="#p" fill="#000000" />
+      <use x="96" y="324" xlink:href="#p" fill="#000000" />
+      <use x="132" y="324" xlink:href="#p" fill="#000000" />
+      <use x="144" y="324" xlink:href="#p" fill="#000000" />
+      <use x="156" y="324" xlink:href="#p" fill="#000000" />
+      <use x="180" y="324" xlink:href="#p" fill="#000000" />
+      <use x="228" y="324" xlink:href="#p" fill="#000000" />
+      <use x="252" y="324" xlink:href="#p" fill="#000000" />
+      <use x="264" y="324" xlink:href="#p" fill="#000000" />
+      <use x="300" y="324" xlink:href="#p" fill="#000000" />
+      <use x="312" y="324" xlink:href="#p" fill="#000000" />
+      <use x="336" y="324" xlink:href="#p" fill="#000000" />
+      <use x="348" y="324" xlink:href="#p" fill="#000000" />
+      <use x="24" y="336" xlink:href="#p" fill="#000000" />
+      <use x="48" y="336" xlink:href="#p" fill="#000000" />
+      <use x="60" y="336" xlink:href="#p" fill="#000000" />
+      <use x="72" y="336" xlink:href="#p" fill="#000000" />
+      <use x="96" y="336" xlink:href="#p" fill="#000000" />
+      <use x="120" y="336" xlink:href="#p" fill="#000000" />
+      <use x="132" y="336" xlink:href="#p" fill="#000000" />
+      <use x="168" y="336" xlink:href="#p" fill="#000000" />
+      <use x="180" y="336" xlink:href="#p" fill="#000000" />
+      <use x="204" y="336" xlink:href="#p" fill="#000000" />
+      <use x="228" y="336" xlink:href="#p" fill="#000000" />
+      <use x="252" y="336" xlink:href="#p" fill="#000000" />
+      <use x="300" y="336" xlink:href="#p" fill="#000000" />
+      <use x="312" y="336" xlink:href="#p" fill="#000000" />
+      <use x="360" y="336" xlink:href="#p" fill="#000000" />
+      <use x="24" y="348" xlink:href="#p" fill="#000000" />
+      <use x="96" y="348" xlink:href="#p" fill="#000000" />
+      <use x="204" y="348" xlink:href="#p" fill="#000000" />
+      <use x="228" y="348" xlink:href="#p" fill="#000000" />
+      <use x="252" y="348" xlink:href="#p" fill="#000000" />
+      <use x="288" y="348" xlink:href="#p" fill="#000000" />
+      <use x="336" y="348" xlink:href="#p" fill="#000000" />
+      <use x="348" y="348" xlink:href="#p" fill="#000000" />
+      <use x="24" y="360" xlink:href="#p" fill="#000000" />
+      <use x="36" y="360" xlink:href="#p" fill="#000000" />
+      <use x="48" y="360" xlink:href="#p" fill="#000000" />
+      <use x="60" y="360" xlink:href="#p" fill="#000000" />
+      <use x="72" y="360" xlink:href="#p" fill="#000000" />
+      <use x="84" y="360" xlink:href="#p" fill="#000000" />
+      <use x="96" y="360" xlink:href="#p" fill="#000000" />
+      <use x="144" y="360" xlink:href="#p" fill="#000000" />
+      <use x="156" y="360" xlink:href="#p" fill="#000000" />
+      <use x="168" y="360" xlink:href="#p" fill="#000000" />
+      <use x="180" y="360" xlink:href="#p" fill="#000000" />
+      <use x="204" y="360" xlink:href="#p" fill="#000000" />
+      <use x="216" y="360" xlink:href="#p" fill="#000000" />
+      <use x="228" y="360" xlink:href="#p" fill="#000000" />
+      <use x="252" y="360" xlink:href="#p" fill="#000000" />
+      <use x="300" y="360" xlink:href="#p" fill="#000000" />
+      <use x="336" y="360" xlink:href="#p" fill="#000000" />
+      <use x="348" y="360" xlink:href="#p" fill="#000000" />
+      <use x="360" y="360" xlink:href="#p" fill="#000000" />
+      </g>
+    </g>
+    <g class="sans" transform="translate(342 64)">
+      <text x="0" y="0" fill="#10131f" font-size="45" font-weight="900">扫一下</text>
+      <text x="0" y="62" fill="#10131f" font-size="45" font-weight="900">解锁今日气运</text>
+      <text x="0" y="124" fill="#334155" font-size="30" font-weight="800">输入你的生辰，生成专属灵感号</text>
+      <text x="0" y="176" fill="#e8324c" font-size="30" font-weight="900">今天宜不宜出手，先看这一卦。</text>
+    </g>
+  </g>
+
+  <g transform="translate(118 1760)" class="sans">
+    <text x="0" y="0" fill="#aeb7c9" font-size="25" font-weight="700">天选流日选号 · 仅供娱乐与灵感参考，请理性购彩</text>
+    <text x="844" y="0" text-anchor="end" fill="#f6c866" font-size="25" font-weight="900">长按识别 / 扫码进入</text>
+  </g>
+</svg>
+
