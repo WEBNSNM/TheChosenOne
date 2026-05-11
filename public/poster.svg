@@ -88,14 +88,14 @@
     <text class="serif" x="0" y="0" fill="url(#gold)" font-size="118" font-weight="900">今晚这组号</text>
     <text class="serif" x="0" y="142" fill="#fffaf0" font-size="118" font-weight="900">也许在等你</text>
     <text class="sans" x="0" y="224" fill="#dce4f5" font-size="34" font-weight="700">把生辰八字交给流日五行，看看今日气运</text>
-    <text class="sans" x="0" y="276" fill="#dce4f5" font-size="34" font-weight="700">会把哪一组双色球灵感号推到你面前。</text>
+    <text class="sans" x="0" y="276" fill="#dce4f5" font-size="34" font-weight="700">会把哪一组红蓝灵感数字推到你面前。</text>
   </g>
 
   <g transform="translate(118 720)" filter="url(#softShadow)">
     <rect x="0" y="0" width="844" height="322" rx="28" fill="#1f2739" stroke="#ffffff" stroke-opacity="0.12" />
     <rect x="26" y="28" width="792" height="266" rx="22" fill="#161d2d" stroke="#4fd6bd" stroke-opacity="0.24" />
     <text class="sans" x="58" y="88" fill="#4fd6bd" font-size="28" font-weight="900">今日可查</text>
-    <text class="sans" x="58" y="146" fill="#fffaf0" font-size="42" font-weight="900">吉凶走势 · 宜忌提醒 · 灵感选号</text>
+    <text class="sans" x="58" y="146" fill="#fffaf0" font-size="42" font-weight="900">吉凶走势 · 宜忌提醒 · 灵感取数</text>
     <text class="sans" x="58" y="202" fill="#aeb7c9" font-size="30" font-weight="700">不是玄乎地猜，是把命盘、流日、五行喜忌</text>
     <text class="sans" x="58" y="250" fill="#aeb7c9" font-size="30" font-weight="700">都摊开给你看。</text>
   </g>
@@ -560,13 +560,13 @@
     <g class="sans" transform="translate(342 64)">
       <text x="0" y="0" fill="#10131f" font-size="45" font-weight="900">扫一下</text>
       <text x="0" y="62" fill="#10131f" font-size="45" font-weight="900">解锁今日气运</text>
-      <text x="0" y="124" fill="#334155" font-size="30" font-weight="800">输入你的生辰，生成专属灵感号</text>
-      <text x="0" y="176" fill="#e8324c" font-size="30" font-weight="900">今天宜不宜出手，先看这一卦。</text>
+      <text x="0" y="124" fill="#334155" font-size="30" font-weight="800">输入你的生辰，生成专属灵感数字</text>
+      <text x="0" y="176" fill="#e8324c" font-size="30" font-weight="900">今天宜不宜行动，先看这一卦。</text>
     </g>
   </g>
 
   <g transform="translate(118 1760)" class="sans">
-    <text x="0" y="0" fill="#aeb7c9" font-size="25" font-weight="700">天选流日选号 · 仅供娱乐与灵感参考，请理性购彩</text>
+    <text x="0" y="0" fill="#aeb7c9" font-size="25" font-weight="700">天选流日灵感 · 仅供娱乐与灵感参考，请理性看待</text>
     <text x="844" y="0" text-anchor="end" fill="#f6c866" font-size="25" font-weight="900">长按识别 / 扫码进入</text>
   </g>
 </svg>

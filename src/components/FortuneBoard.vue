@@ -12,8 +12,8 @@ defineProps<{
   <section class="fortune-board">
     <div class="board-head">
       <div>
-        <p class="eyebrow">DOUBLE COLOR BALL</p>
-        <h2>今日灵感号</h2>
+        <p class="eyebrow">FLOW DAY NUMBERS</p>
+        <h2>今日灵感数字</h2>
       </div>
       <div class="score-ring" :style="{ '--score': `${result.score}%` }">
         <span>{{ result.score }}</span>

@@ -65,9 +65,9 @@ function formatDate(date: Date): string {
 
       <section class="hero-copy">
         <p class="kicker">BAZI DAILY FORTUNE</p>
-        <h1>天选流日选号</h1>
+        <h1>天选流日灵感</h1>
         <p class="hero-lead">
-          以生辰四柱、当日流气与五行取象，生成一组双色球灵感号。
+          以生辰四柱、当日流气与五行取象，生成一组红蓝灵感数字。
         </p>
         <div class="hero-metrics" aria-label="今日流日">
           <span>
@@ -107,7 +107,7 @@ function formatDate(date: Date): string {
 
     <footer class="footer-note">
       <TicketCheck :size="16" />
-      <span>仅供娱乐与灵感参考，购买彩票请量力而行。</span>
+      <span>仅供娱乐与灵感参考，数字结果请理性看待。</span>
     </footer>
   </div>
 </template>

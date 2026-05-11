@@ -148,7 +148,7 @@ function toggleLuckyNumber(value: number): void {
     </label>
 
     <label class="field">
-      <span>选号日期</span>
+      <span>流日日期</span>
       <input
         :value="modelValue.targetDate"
         type="date"
@@ -157,7 +157,7 @@ function toggleLuckyNumber(value: number): void {
       />
     </label>
 
-    <div class="strategy-group" role="group" aria-label="选号策略">
+    <div class="strategy-group" role="group" aria-label="灵感策略">
       <button
         v-for="option in strategies"
         :key="option.value"
@@ -192,7 +192,7 @@ function toggleLuckyNumber(value: number): void {
 
     <button class="primary-action" type="submit">
       <WandSparkles :size="18" />
-      <span>生成号码</span>
+      <span>生成灵感</span>
     </button>
   </form>
 </template>
