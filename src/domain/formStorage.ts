@@ -1,4 +1,4 @@
-import type { CalendarMode } from './bazi';
+import type { BirthGender, BirthTimeAccuracy, CalendarMode } from './bazi';
 import type { LotteryInput, LotteryStrategy } from './lottery';
 import { normalizeLuckyNumbers } from './lottery';
 
@@ -7,6 +7,8 @@ export const FORM_STORAGE_KEY = 'the-chosen-one:fortune-form';
 type PersistedForm = Partial<Record<keyof LotteryInput, unknown>>;
 
 const calendarModes = new Set<CalendarMode>(['solar', 'lunar']);
+const birthGenders = new Set<BirthGender>(['male', 'female', 'unspecified']);
+const birthTimeAccuracies = new Set<BirthTimeAccuracy>(['exact', 'approximate', 'unknown']);
 const strategies = new Set<LotteryStrategy>(['balance', 'wealth', 'bold']);
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const timePattern = /^\d{2}:\d{2}$/;
@@ -53,7 +55,15 @@ function normalizeForm(defaults: LotteryInput, saved: PersistedForm): LotteryInp
     birthLeapMonth: birthCalendar === 'lunar' && typeof saved.birthLeapMonth === 'boolean'
       ? saved.birthLeapMonth
       : false,
-    targetDate: isDateString(saved.targetDate) ? saved.targetDate : defaults.targetDate,
+    gender: isBirthGender(saved.gender) ? saved.gender : defaults.gender,
+    birthPlace: normalizeBirthPlace(saved.birthPlace, defaults.birthPlace),
+    useTrueSolarTime: typeof saved.useTrueSolarTime === 'boolean'
+      ? saved.useTrueSolarTime
+      : defaults.useTrueSolarTime,
+    birthTimeAccuracy: isBirthTimeAccuracy(saved.birthTimeAccuracy)
+      ? saved.birthTimeAccuracy
+      : defaults.birthTimeAccuracy,
+    targetDate: defaults.targetDate,
     luckyNumbers: normalizeLuckyNumbers(Array.isArray(saved.luckyNumbers) ? saved.luckyNumbers : defaults.luckyNumbers),
     strategy: isLotteryStrategy(saved.strategy) ? saved.strategy : defaults.strategy,
   };
@@ -69,21 +79,27 @@ function normalizeForm(defaults: LotteryInput, saved: PersistedForm): LotteryInp
   return form;
 }
 
-function toPersistedForm(form: LotteryInput): LotteryInput {
-  const persisted: LotteryInput = {
+function toPersistedForm(form: LotteryInput): PersistedForm {
+  return {
     birthDate: form.birthDate,
     birthTime: form.birthTime,
     birthCalendar: form.birthCalendar ?? 'solar',
     birthLeapMonth: Boolean(form.birthLeapMonth),
-    targetDate: form.targetDate,
+    gender: form.gender,
+    birthPlace: normalizeBirthPlace(form.birthPlace),
+    useTrueSolarTime: Boolean(form.useTrueSolarTime),
+    birthTimeAccuracy: form.birthTimeAccuracy,
     luckyNumbers: normalizeLuckyNumbers(form.luckyNumbers),
     strategy: form.strategy,
   };
+}
 
-  if (form.targetCalendar) persisted.targetCalendar = form.targetCalendar;
-  if (typeof form.targetLeapMonth === 'boolean') persisted.targetLeapMonth = form.targetLeapMonth;
+function normalizeBirthPlace(value: unknown, fallback?: string): string | undefined {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
 
-  return persisted;
+  return typeof fallback === 'string' ? fallback.trim() : fallback;
 }
 
 function isDateString(value: unknown): value is string {
@@ -96,6 +112,14 @@ function isTimeString(value: unknown): value is string {
 
 function isCalendarMode(value: unknown): value is CalendarMode {
   return typeof value === 'string' && calendarModes.has(value as CalendarMode);
+}
+
+function isBirthGender(value: unknown): value is BirthGender {
+  return typeof value === 'string' && birthGenders.has(value as BirthGender);
+}
+
+function isBirthTimeAccuracy(value: unknown): value is BirthTimeAccuracy {
+  return typeof value === 'string' && birthTimeAccuracies.has(value as BirthTimeAccuracy);
 }
 
 function isLotteryStrategy(value: unknown): value is LotteryStrategy {

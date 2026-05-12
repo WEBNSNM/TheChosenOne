@@ -5,8 +5,16 @@ import { describe, expect, it } from 'vitest';
 const userFacingFiles = [
   'index.html',
   'src/App.vue',
+  'src/components/ConsultationPage.vue',
+  'src/components/ConsultationHub.vue',
   'src/components/FortuneBoard.vue',
   'src/components/FortuneForm.vue',
+  'src/components/LeadPage.vue',
+  'src/components/SharePosterCard.vue',
+  'src/domain/consultation.ts',
+  'src/domain/deepseekClient.ts',
+  'src/domain/deepseekSettings.ts',
+  'src/domain/sharePoster.ts',
   'public/poster.svg',
   'public/poster-export.html',
 ];

@@ -19,6 +19,13 @@ declare module 'lunar-javascript' {
     getDayXiongSha(): string[];
     getDayInGanZhi(): string;
     getDayShengXiao(): string;
+    getYearInGanZhi(): string;
+    getYearInGanZhiExact(): string;
+    getYearShengXiao(): string;
+    getMonth(): number;
+    getDay(): number;
+    getMonthInChinese(): string;
+    getDayInChinese(): string;
     getChongDesc(): string;
     getSha(): string;
     getLiuYao(): string;

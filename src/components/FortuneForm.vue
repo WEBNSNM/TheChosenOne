@@ -1,6 +1,18 @@
 <script setup lang="ts">
-import { BadgeDollarSign, Flame, Moon, Scale, Sun, WandSparkles } from 'lucide-vue-next';
-import type { CalendarMode } from '../domain/bazi';
+import { computed } from 'vue';
+import {
+  BadgeDollarSign,
+  Clock3,
+  Flame,
+  LocateFixed,
+  MapPin,
+  Moon,
+  Scale,
+  Sun,
+  UserRound,
+  WandSparkles,
+} from 'lucide-vue-next';
+import type { BirthGender, BirthTimeAccuracy, CalendarMode } from '../domain/bazi';
 import type { LotteryInput, LotteryStrategy } from '../domain/lottery';
 
 const props = defineProps<{
@@ -48,7 +60,44 @@ const calendarModes = [
   },
 ] as const;
 
+const genderOptions = [
+  {
+    value: 'male',
+    label: '男',
+    title: '用于大运顺逆与报告语境',
+  },
+  {
+    value: 'female',
+    label: '女',
+    title: '用于大运顺逆与报告语境',
+  },
+  {
+    value: 'unspecified',
+    label: '不透露',
+    title: '继续使用中性解读',
+  },
+] as const;
+
+const timeAccuracyOptions = [
+  {
+    value: 'exact',
+    label: '准确',
+    title: '出生时间比较确定',
+  },
+  {
+    value: 'approximate',
+    label: '大概',
+    title: '出生时间可能有少量误差',
+  },
+  {
+    value: 'unknown',
+    label: '不确定',
+    title: '不确定具体时辰，报告会降低时柱断语强度',
+  },
+] as const;
+
 const luckyDigits = Array.from({ length: 10 }, (_, index) => index);
+const canUseTrueSolarTime = computed(() => Boolean(props.modelValue.birthPlace?.trim()));
 
 function updateField(field: keyof LotteryInput, event: Event): void {
   emit('update:modelValue', {
@@ -64,6 +113,20 @@ function setStrategy(strategy: LotteryStrategy): void {
   });
 }
 
+function setGender(gender: BirthGender): void {
+  emit('update:modelValue', {
+    ...props.modelValue,
+    gender,
+  });
+}
+
+function setBirthTimeAccuracy(birthTimeAccuracy: BirthTimeAccuracy): void {
+  emit('update:modelValue', {
+    ...props.modelValue,
+    birthTimeAccuracy,
+  });
+}
+
 function setBirthCalendar(calendar: CalendarMode): void {
   emit('update:modelValue', {
     ...props.modelValue,
@@ -76,6 +139,23 @@ function updateLeapMonth(event: Event): void {
   emit('update:modelValue', {
     ...props.modelValue,
     birthLeapMonth: (event.target as HTMLInputElement).checked,
+  });
+}
+
+function updateBirthPlace(event: Event): void {
+  const birthPlace = (event.target as HTMLInputElement).value;
+
+  emit('update:modelValue', {
+    ...props.modelValue,
+    birthPlace,
+    useTrueSolarTime: birthPlace.trim() ? props.modelValue.useTrueSolarTime : false,
+  });
+}
+
+function updateTrueSolarTime(event: Event): void {
+  emit('update:modelValue', {
+    ...props.modelValue,
+    useTrueSolarTime: canUseTrueSolarTime.value && (event.target as HTMLInputElement).checked,
   });
 }
 
@@ -146,6 +226,82 @@ function toggleLuckyNumber(value: number): void {
         @input="updateField('birthTime', $event)"
       />
     </label>
+
+    <div class="profile-section">
+      <div class="field-caption">
+        <span>
+          <UserRound :size="16" />
+          性别
+        </span>
+        <small>影响大运与报告语境</small>
+      </div>
+      <div class="option-grid gender-grid" role="group" aria-label="性别">
+        <button
+          v-for="option in genderOptions"
+          :key="option.value"
+          :class="{ active: (modelValue.gender ?? 'unspecified') === option.value }"
+          :title="option.title"
+          type="button"
+          @click="setGender(option.value)"
+        >
+          <UserRound :size="16" />
+          <span>{{ option.label }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="field-caption">
+        <span>
+          <Clock3 :size="16" />
+          出生时间准确度
+        </span>
+        <small>控制解读确定性</small>
+      </div>
+      <div class="option-grid accuracy-grid" role="group" aria-label="出生时间准确度">
+        <button
+          v-for="option in timeAccuracyOptions"
+          :key="option.value"
+          :class="{ active: (modelValue.birthTimeAccuracy ?? 'approximate') === option.value }"
+          :title="option.title"
+          type="button"
+          @click="setBirthTimeAccuracy(option.value)"
+        >
+          <Clock3 :size="16" />
+          <span>{{ option.label }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="profile-section calibration-fields">
+      <label class="field">
+        <span>
+          <MapPin :size="16" />
+          出生地
+        </span>
+        <input
+          :value="modelValue.birthPlace"
+          type="text"
+          placeholder="例如：杭州"
+          autocomplete="address-level2"
+          @input="updateBirthPlace"
+        />
+      </label>
+
+      <label class="switch-row" :class="{ disabled: !canUseTrueSolarTime }">
+        <input
+          :checked="Boolean(modelValue.useTrueSolarTime) && canUseTrueSolarTime"
+          :disabled="!canUseTrueSolarTime"
+          type="checkbox"
+          @change="updateTrueSolarTime"
+        />
+        <span>
+          <LocateFixed :size="16" />
+          使用真太阳时校准
+        </span>
+      </label>
+      <p class="field-hint">出生地可用于真太阳时校准，时辰交界附近更建议填写。</p>
+    </div>
 
     <label class="field">
       <span>流日日期</span>

@@ -54,7 +54,7 @@ defineProps<{
         <ShieldCheck :size="15" />
         {{ fortune.almanac.zhiXing }}日 · 冲{{ fortune.almanac.clash }}
       </span>
-      <span>农历 {{ fortune.profile.targetInfo.lunarText }}</span>
+      <span>农历 {{ fortune.profile.targetInfo.lunarDateText }}</span>
       <span>生日换算 {{ fortune.profile.birthInfo.solarDate }}</span>
     </div>
   </section>

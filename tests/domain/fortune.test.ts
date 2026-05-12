@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeDailyFortune } from './fortune';
+import { analyzeDailyFortune } from '../../src/domain/fortune';
 
 describe('daily fortune analysis', () => {
   it('combines almanac signals with the birth chart', () => {
@@ -31,5 +31,18 @@ describe('daily fortune analysis', () => {
     expect(result.almanac.tianShenType).toBe('黑道');
     expect(result.level).not.toBe('great');
     expect(result.avoid).not.toContain('无');
+  });
+
+  it('keeps daily scores varied across nearby dates for the same chart', () => {
+    const scores = ['2026-05-09', '2026-05-10', '2026-05-11', '2026-05-12', '2026-05-13'].map((targetDate) => {
+      return analyzeDailyFortune({
+        birthDate: '1992-08-08',
+        birthTime: '08:30',
+        birthCalendar: 'solar',
+        targetDate,
+      }).score;
+    });
+
+    expect(new Set(scores).size).toBeGreaterThan(3);
   });
 });

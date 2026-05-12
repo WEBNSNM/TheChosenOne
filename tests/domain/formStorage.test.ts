@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { LotteryInput } from './lottery';
-import { loadSavedForm, saveForm } from './formStorage';
+import type { LotteryInput } from '../../src/domain/lottery';
+import { loadSavedForm, saveForm } from '../../src/domain/formStorage';
 
 const defaults: LotteryInput = {
   birthDate: '1992-08-08',
@@ -51,7 +51,11 @@ describe('form storage', () => {
       birthTime: '11:22',
       birthCalendar: 'lunar',
       birthLeapMonth: true,
-      targetDate: '2026-05-11',
+      gender: 'female',
+      birthPlace: '杭州',
+      useTrueSolarTime: true,
+      birthTimeAccuracy: 'exact',
+      targetDate: '2026-05-25',
       luckyNumbers: [8, 6, 8, -1, 12],
       strategy: 'wealth',
     };
@@ -60,7 +64,50 @@ describe('form storage', () => {
 
     expect(loadSavedForm(defaults, storage)).toEqual({
       ...saved,
+      targetDate: defaults.targetDate,
       luckyNumbers: [6, 8],
+    });
+  });
+
+  it('sanitizes optional chart calibration fields', () => {
+    const storage = new MemoryStorage();
+    storage.setItem('the-chosen-one:fortune-form', JSON.stringify({
+      birthDate: '1990-02-03',
+      birthTime: '06:45',
+      birthCalendar: 'solar',
+      gender: 'robot',
+      birthPlace: '  成都  ',
+      useTrueSolarTime: true,
+      birthTimeAccuracy: 'maybe',
+      strategy: 'bold',
+      luckyNumbers: [9],
+    }));
+
+    expect(loadSavedForm(defaults, storage)).toEqual({
+      ...defaults,
+      birthDate: '1990-02-03',
+      birthTime: '06:45',
+      gender: defaults.gender,
+      birthPlace: '成都',
+      useTrueSolarTime: true,
+      birthTimeAccuracy: defaults.birthTimeAccuracy,
+      luckyNumbers: [9],
+      strategy: 'bold',
+    });
+  });
+
+  it('does not persist a stale target date across app launches', () => {
+    const storage = new MemoryStorage();
+
+    saveForm({
+      ...defaults,
+      targetDate: '2026-05-25',
+      birthDate: '1990-02-03',
+    }, storage);
+
+    expect(loadSavedForm({ ...defaults, targetDate: '2026-05-12' }, storage)).toMatchObject({
+      birthDate: '1990-02-03',
+      targetDate: '2026-05-12',
     });
   });
 

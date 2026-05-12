@@ -55,12 +55,18 @@ export function analyzeDailyFortune(input: BaziInput): DailyFortuneResult {
   const almanac = profile.targetInfo.almanac;
   const relation = getRelationAdvice(profile.dayMaster.element, profile.transit.day.element);
   const yellowBonus = almanac.tianShenType === '黄道' ? 16 : -10;
+  const spiritScore = clamp(almanac.jiShen.length - almanac.xiongSha.length, -5, 5);
+  const rhythmScore = getRhythmScore(profile);
   const rawScore = clamp(
-    48 + yellowBonus + almanac.yi.length * 3 - almanac.ji.length * 2 + relation.score,
+    48 + yellowBonus + almanac.yi.length * 2.6 - almanac.ji.length * 1.8 + relation.score + spiritScore + rhythmScore,
     1,
     100,
   );
-  const score = almanac.tianShenType === '黑道' ? Math.min(rawScore, 61) : rawScore;
+  const score = Math.round(
+    almanac.tianShenType === '黑道'
+      ? clamp(rawScore - 8, 35, 68)
+      : clamp(rawScore, 42, 95),
+  );
   const level = getLevel(score);
   const suitable = uniq([...relation.suitable, ...almanac.yi]).slice(0, 7);
   const avoid = uniq([...relation.avoid, ...almanac.ji]).slice(0, 7);
@@ -76,6 +82,20 @@ export function analyzeDailyFortune(input: BaziInput): DailyFortuneResult {
     almanac,
     profile,
   };
+}
+
+function getRhythmScore(profile: BaziProfile): number {
+  const birthDay = profile.birth.day;
+  const flowDay = profile.transit.day;
+  const flowMonth = profile.transit.month;
+  const signal =
+    birthDay.stemIndex * 7
+    + birthDay.branchIndex * 5
+    + flowDay.stemIndex * 3
+    + flowDay.branchIndex * 2
+    + flowMonth.branchIndex;
+
+  return signal % 13 - 6;
 }
 
 function getRelationAdvice(dayMaster: ElementName, flow: ElementName): RelationAdvice {

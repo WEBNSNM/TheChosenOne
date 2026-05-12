@@ -5,7 +5,7 @@ import {
   getHourPillar,
   getYearPillar,
   parseLocalDate,
-} from './bazi';
+} from '../../src/domain/bazi';
 
 describe('bazi pillar calculations', () => {
   it('uses the solar year boundary near Li Chun for year pillars', () => {
@@ -35,7 +35,20 @@ describe('bazi pillar calculations', () => {
     expect(Object.keys(profile.birth.elementCounts).sort()).toEqual(['土', '木', '水', '火', '金']);
     expect(profile.dayMaster.element).toMatch(/[木火土金水]/);
     expect(profile.birthInfo.solarDate).toBe('1992-08-08');
+    expect(profile.targetInfo.lunarDateText).toBe('丙午年三月廿三');
     expect(profile.targetInfo.almanac.tianShenType).toMatch(/黄道|黑道/);
+  });
+
+  it('formats the target lunar date with the lunar year stem-branch instead of a confusing numeric year', () => {
+    const profile = getBaziProfile({
+      birthDate: '1992-08-08',
+      birthTime: '08:30',
+      birthCalendar: 'solar',
+      targetDate: '2026-05-12',
+    });
+
+    expect(profile.targetInfo.solarDate).toBe('2026-05-12');
+    expect(profile.targetInfo.lunarDateText).toBe('丙午年三月廿六');
   });
 
   it('converts lunar birthday input before building the birth chart', () => {

@@ -8,6 +8,8 @@ export type HeavenlyStem = (typeof HEAVENLY_STEMS)[number];
 export type EarthlyBranch = (typeof EARTHLY_BRANCHES)[number];
 export type ElementName = (typeof ELEMENTS)[number];
 export type CalendarMode = 'solar' | 'lunar';
+export type BirthGender = 'male' | 'female' | 'unspecified';
+export type BirthTimeAccuracy = 'exact' | 'approximate' | 'unknown';
 
 export interface Pillar {
   stem: HeavenlyStem;
@@ -23,6 +25,10 @@ export interface BaziInput {
   birthTime: string;
   birthCalendar?: CalendarMode;
   birthLeapMonth?: boolean;
+  gender?: BirthGender;
+  birthPlace?: string;
+  useTrueSolarTime?: boolean;
+  birthTimeAccuracy?: BirthTimeAccuracy;
   targetDate: string;
   targetCalendar?: CalendarMode;
   targetLeapMonth?: boolean;
@@ -56,6 +62,7 @@ export interface ResolvedCalendarInfo {
   isLeapMonth: boolean;
   solarDate: string;
   lunarText: string;
+  lunarDateText: string;
 }
 
 export interface AlmanacInfo {
@@ -282,6 +289,7 @@ function resolveCalendarDate(
     solar,
     solarDate: formatSolarDate(solar),
     lunarText: lunar.toString(),
+    lunarDateText: formatLunarDateText(lunar),
   };
 }
 
@@ -292,6 +300,7 @@ function toResolvedInfo(resolved: ResolvedCalendarInfo & { solar: SolarDate }): 
     isLeapMonth: resolved.isLeapMonth,
     solarDate: resolved.solarDate,
     lunarText: resolved.lunarText,
+    lunarDateText: resolved.lunarDateText,
   };
 }
 
@@ -313,6 +322,12 @@ function formatSolarDate(solar: SolarDate): string {
     String(solar.getMonth()).padStart(2, '0'),
     String(solar.getDay()).padStart(2, '0'),
   ].join('-');
+}
+
+function formatLunarDateText(lunar: LunarDate): string {
+  const leap = lunar.getMonth() < 0 ? '闰' : '';
+
+  return `${lunar.getYearInGanZhi()}年${leap}${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`;
 }
 
 function parseDateParts(date: string): { year: number; month: number; day: number } {

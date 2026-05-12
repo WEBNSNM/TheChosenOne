@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateLuckyLottery, getLuckyNumberSeedSegment } from './lottery';
+import { generateLuckyLottery, getLuckyNumberSeedSegment } from '../../src/domain/lottery';
 
 const input = {
   birthDate: '1992-08-08',
