@@ -4,6 +4,7 @@ import ChartCalibrationCard from './ChartCalibrationCard.vue';
 import FortuneBoard from './FortuneBoard.vue';
 import FortuneForm from './FortuneForm.vue';
 import PremiumReportPreview from './PremiumReportPreview.vue';
+import SharePosterCard from './SharePosterCard.vue';
 import type { LotteryInput, LuckyLotteryResult } from '../domain/lottery';
 
 const props = defineProps<{
@@ -39,6 +40,7 @@ function scrollToForm(): void {
     <section class="result-stack lead-result" aria-live="polite">
       <p v-if="error" class="error-banner">{{ error }}</p>
       <FortuneBoard :result="result" />
+      <SharePosterCard :result="result" :target-date="modelValue.targetDate" />
       <ChartCalibrationCard :form="modelValue" @improve="scrollToForm" />
       <PremiumReportPreview :form="modelValue" @open-consultation="emit('openConsultation')" />
     </section>

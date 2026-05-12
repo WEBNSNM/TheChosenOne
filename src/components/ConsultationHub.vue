@@ -2,11 +2,13 @@
 import {
   Bot,
   CheckCircle2,
+  ChevronDown,
   KeyRound,
   LoaderCircle,
   MessageSquareText,
   Save,
   Send,
+  Settings2,
   ShieldCheck,
   Trash2,
   UploadCloud,
@@ -40,6 +42,7 @@ const screenshotText = ref('');
 const answer = ref('');
 const error = ref('');
 const notice = ref('');
+const settingsOpen = ref(false);
 const isLoading = ref(false);
 const imagePreviewUrl = ref('');
 const imageName = ref('');
@@ -206,7 +209,19 @@ function clearNoticeTimer(): void {
       选择一个主题，结合你的命盘与今日流日继续追问。当前为个人测试入口，正式使用建议通过安全服务连接模型。
     </p>
 
-    <div class="consultation-settings" aria-label="DeepSeek 设置">
+    <button
+      type="button"
+      class="settings-toggle"
+      :aria-expanded="settingsOpen"
+      @click="settingsOpen = !settingsOpen"
+    >
+      <Settings2 :size="17" />
+      <span>模型设置</span>
+      <small>{{ activeModel.label }}</small>
+      <ChevronDown :size="18" :class="{ rotated: settingsOpen }" />
+    </button>
+
+    <div v-if="settingsOpen" class="consultation-settings" aria-label="DeepSeek 设置">
       <label class="field key-field">
         <span>
           <KeyRound :size="16" />
@@ -236,7 +251,7 @@ function clearNoticeTimer(): void {
       </div>
     </div>
 
-    <p class="model-note">
+    <p v-if="settingsOpen" class="model-note">
       <ShieldCheck :size="16" />
       <span>{{ activeModel.description }} Key 仅保存在本机浏览器，请勿在公开环境长期使用。</span>
     </p>

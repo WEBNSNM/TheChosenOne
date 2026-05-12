@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { ArrowLeft, Crown, Sparkles } from 'lucide-vue-next';
 import ConsultationHub from './ConsultationHub.vue';
-import DailyFortuneCard from './DailyFortuneCard.vue';
-import PillarGrid from './PillarGrid.vue';
-import PremiumReportPreview from './PremiumReportPreview.vue';
-import SharePosterCard from './SharePosterCard.vue';
 import type { LotteryInput, LuckyLotteryResult } from '../domain/lottery';
 
 defineProps<{
@@ -40,19 +36,51 @@ const emit = defineEmits<{
       </div>
     </section>
 
-    <section class="result-stack" aria-live="polite">
-      <DailyFortuneCard :fortune="result.dailyFortune" />
+    <section class="result-stack consultation-stack" aria-live="polite">
+      <section class="consultation-summary-card">
+        <div class="consultation-summary-head">
+          <div>
+            <p class="eyebrow">CURRENT CHART</p>
+            <h2>当前命盘摘要</h2>
+          </div>
+          <div class="fortune-badge" :class="result.dailyFortune.level">
+            <strong>{{ result.dailyFortune.label }}</strong>
+            <span>{{ result.dailyFortune.score }}</span>
+          </div>
+        </div>
 
-      <div class="pillar-layout">
-        <PillarGrid title="命盘五行" :set="result.profile.birth" />
-        <PillarGrid title="流日三柱" :set="result.profile.transit" compact />
-      </div>
+        <div class="summary-chip-row" aria-label="当前命盘摘要">
+          <span>日主 {{ result.profile.dayMaster.stem }}{{ result.profile.dayMaster.element }}</span>
+          <span>流日 {{ result.profile.transit.day.label }}</span>
+          <span>{{ form.birthPlace?.trim() || '未填出生地' }}</span>
+          <span>{{ form.useTrueSolarTime ? '真太阳时已开' : '未启用真太阳时' }}</span>
+        </div>
 
-      <SharePosterCard :result="result" :target-date="form.targetDate" />
+        <p class="summary-focus">{{ result.dailyFortune.personalFocus }}</p>
 
-      <PremiumReportPreview :form="form" :show-action="false" />
+        <details class="consultation-detail-drawer">
+          <summary>
+            <Sparkles :size="17" />
+            <span>查看命盘细节</span>
+          </summary>
+          <div class="summary-detail-grid">
+            <div class="summary-detail-block">
+              <strong>本命四柱</strong>
+              <span>{{ result.profile.birth.pillars.map((pillar) => pillar.label).join(' · ') }}</span>
+            </div>
+            <div class="summary-detail-block">
+              <strong>流日三柱</strong>
+              <span>{{ result.profile.transit.pillars.map((pillar) => pillar.label).join(' · ') }}</span>
+            </div>
+            <div class="summary-detail-block">
+              <strong>今日适合</strong>
+              <span>{{ result.dailyFortune.suitable.slice(0, 4).join('、') }}</span>
+            </div>
+          </div>
+        </details>
+      </section>
 
-      <section class="consultation-anchor">
+      <section class="consultation-anchor compact-anchor">
         <div>
           <p class="eyebrow">AI SERVICE</p>
           <h2>选择一个你最关心的问题</h2>

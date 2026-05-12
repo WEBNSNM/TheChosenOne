@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Download, Eye, Image as ImageIcon, LoaderCircle, RefreshCw } from 'lucide-vue-next';
-import { onBeforeUnmount, ref, watch } from 'vue';
+import { Download, Eye, Image as ImageIcon, LoaderCircle, RefreshCw, X } from 'lucide-vue-next';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   SHARE_POSTER_TEMPLATES,
   createSharePosterPng,
@@ -15,6 +15,7 @@ const props = defineProps<{
 }>();
 
 const previewUrl = ref('');
+const isModalOpen = ref(false);
 const isGenerating = ref(false);
 const error = ref('');
 const selectedTemplate = ref<SharePosterTemplateId>('mystic');
@@ -35,6 +36,11 @@ watch(selectedTemplate, () => {
 
 onBeforeUnmount(() => {
   clearPreview();
+  window.removeEventListener('keydown', handleKeydown);
+});
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
 });
 
 async function generatePoster(): Promise<string | undefined> {
@@ -56,6 +62,14 @@ async function generatePoster(): Promise<string | undefined> {
   }
 }
 
+async function openPosterModal(): Promise<void> {
+  const url = previewUrl.value || await generatePoster();
+
+  if (url) {
+    isModalOpen.value = true;
+  }
+}
+
 async function downloadPoster(): Promise<void> {
   const url = previewUrl.value || await generatePoster();
 
@@ -67,10 +81,22 @@ async function downloadPoster(): Promise<void> {
   anchor.click();
 }
 
+function closePosterModal(): void {
+  isModalOpen.value = false;
+}
+
 function clearPreview(): void {
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value);
     previewUrl.value = '';
+  }
+
+  isModalOpen.value = false;
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape' && isModalOpen.value) {
+    closePosterModal();
   }
 }
 </script>
@@ -103,22 +129,47 @@ function clearPreview(): void {
     </div>
 
     <div class="share-actions">
-      <button type="button" class="secondary-action" :disabled="isGenerating" @click="generatePoster">
+      <button type="button" class="secondary-action accent" :disabled="isGenerating" @click="openPosterModal">
         <LoaderCircle v-if="isGenerating" :size="18" class="spin-icon" />
         <RefreshCw v-else-if="previewUrl" :size="18" />
         <Eye v-else :size="18" />
-        <span>{{ previewUrl ? '重新预览' : '预览 PNG' }}</span>
-      </button>
-      <button type="button" class="secondary-action accent" :disabled="isGenerating" @click="downloadPoster">
-        <Download :size="18" />
-        <span>下载</span>
+        <span>{{ previewUrl ? '打开海报' : '生成海报' }}</span>
       </button>
     </div>
 
     <p v-if="error" class="share-error">{{ error }}</p>
-
-    <div v-if="previewUrl" class="poster-preview" aria-label="今日分享图预览">
-      <img :src="previewUrl" alt="今日流日分享图预览" />
-    </div>
   </section>
+
+  <Teleport to="body">
+    <div
+      v-if="previewUrl && isModalOpen"
+      class="poster-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-label="今日分享图预览"
+      @click.self="closePosterModal"
+    >
+      <div class="poster-modal-shell">
+        <div class="poster-modal-head">
+          <div>
+            <p class="eyebrow">POSTER PREVIEW</p>
+            <h2>今日分享 PNG</h2>
+          </div>
+          <div class="poster-modal-actions">
+            <button type="button" class="secondary-action accent" @click="downloadPoster">
+              <Download :size="18" />
+              <span>下载 PNG</span>
+            </button>
+            <button type="button" class="icon-action modal-close" aria-label="关闭海报预览" @click="closePosterModal">
+              <X :size="20" />
+            </button>
+          </div>
+        </div>
+
+        <div class="poster-modal-body">
+          <img :src="previewUrl" alt="今日流日分享图预览" />
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
