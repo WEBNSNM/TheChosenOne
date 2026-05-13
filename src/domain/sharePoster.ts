@@ -393,16 +393,16 @@ function drawNumberStrip(
 }
 
 function drawQrPanel(context: CanvasRenderingContext2D, model: SharePosterModel, qrcode: HTMLImageElement): void {
-  fillRoundedRect(context, 118, 1664, 844, 154, 28, '#f8fafc');
-  fillRoundedRect(context, 144, 1688, 108, 108, 16, '#ffffff');
-  context.drawImage(qrcode, 154, 1698, 88, 88);
-  drawText(context, model.qrTitle, 286, 1718, 34, '#111827', 900);
-  drawText(context, model.qrCaption, 286, 1762, 25, '#334155', 800);
+  fillRoundedRect(context, 118, 1644, 844, 154, 28, '#f8fafc');
+  fillRoundedRect(context, 144, 1668, 108, 108, 16, '#ffffff');
+  context.drawImage(qrcode, 154, 1678, 88, 88);
+  drawText(context, model.qrTitle, 286, 1698, 34, '#111827', 900);
+  drawText(context, model.qrCaption, 286, 1742, 25, '#334155', 800);
 }
 
 function drawFooter(context: CanvasRenderingContext2D, model: SharePosterModel): void {
-  drawText(context, model.footer, 118, 1864, 24, '#aeb7c9', 800);
-  drawText(context, '长按保存 / 扫码进入', 962, 1864, 24, '#f6c866', 900, undefined, 'right');
+  drawText(context, model.footer, 118, 1834, 24, '#aeb7c9', 800);
+  drawText(context, '长按保存 / 扫码进入', 962, 1834, 24, '#f6c866', 900, undefined, 'right');
 }
 
 function drawTags(context: CanvasRenderingContext2D, tags: string[], x: number, y: number, maxWidth: number): void {
