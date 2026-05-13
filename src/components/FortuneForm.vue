@@ -186,6 +186,17 @@ function toggleLuckyNumber(value: number): void {
     </div>
 
     <label class="field">
+      <span>姓名 / 称呼</span>
+      <input
+        :value="modelValue.customerName"
+        type="text"
+        placeholder="例如：林一"
+        autocomplete="name"
+        @input="updateField('customerName', $event)"
+      />
+    </label>
+
+    <label class="field">
       <span>出生日期</span>
       <input
         :value="modelValue.birthDate"

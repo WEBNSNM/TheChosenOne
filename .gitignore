@@ -1,5 +1,6 @@
 .ace-tool/
 .tmp/
+.wrangler/
 node_modules/
 dist/
 .DS_Store

@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "the-chosen-one",
+  "main": "server/app.ts",
+  "compatibility_date": "2026-05-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "the-chosen-one",
+      "database_id": "replace-with-cloudflare-d1-database-id",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "JWT_SECRET": "local-dev-jwt-secret-change-before-production",
+    "CONFIG_ENCRYPTION_KEY": "local-dev-config-encryption-key-change"
+  }
+}

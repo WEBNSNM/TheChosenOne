@@ -1380,6 +1380,24 @@ h2 {
   color: #dffbf6;
 }
 
+.profile-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(246, 239, 225, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-panel .field:last-child {
+  grid-column: 1 / -1;
+}
+
+.profile-panel textarea {
+  min-height: 60px;
+}
+
 .consultation-layout {
   display: grid;
   grid-template-columns: minmax(150px, 0.32fr) minmax(0, 1fr);
@@ -1687,6 +1705,12 @@ h2 {
   font-weight: 800;
 }
 
+.number-ball.placeholder {
+  font-size: 1.4rem;
+  font-weight: 900;
+  opacity: 0.45;
+}
+
 .number-ball.red {
   background: linear-gradient(150deg, #ff7b86, #d6213d 62%, #8f1325);
 }
@@ -1844,6 +1868,236 @@ h2 {
   font-size: 0.88rem;
 }
 
+.admin-shell {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(12, 19, 33, 0.94), rgba(24, 33, 48, 0.96)),
+    radial-gradient(circle at 20% 0%, rgba(208, 173, 95, 0.2), transparent 34%);
+  color: #f7f1e6;
+}
+
+.admin-login {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.admin-login-panel {
+  width: min(420px, 100%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  padding: 26px;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.admin-brand h1 {
+  margin: 3px 0 0;
+  font-size: 25px;
+}
+
+.admin-brand.compact {
+  margin-bottom: 26px;
+}
+
+.admin-brand.compact h1 {
+  font-size: 20px;
+}
+
+.admin-login-form,
+.api-config-form {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-hint {
+  margin: 16px 0 0;
+  color: rgba(247, 241, 230, 0.62);
+  font-size: 13px;
+}
+
+.admin-dashboard {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 22px 16px;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(247, 241, 230, 0.78);
+  cursor: pointer;
+  gap: 10px;
+  padding: 0 12px;
+  text-align: left;
+}
+
+.admin-nav-item.active,
+.admin-nav-item:hover {
+  border-color: rgba(216, 177, 95, 0.35);
+  background: rgba(216, 177, 95, 0.13);
+  color: #fff7e9;
+}
+
+.admin-nav-item.logout {
+  margin-top: 28px;
+}
+
+.admin-content {
+  padding: 28px;
+}
+
+.admin-content-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.admin-content-head h2 {
+  margin: 4px 0 0;
+  font-size: 28px;
+}
+
+.admin-page {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-stats > div,
+.admin-table-wrap,
+.api-config-form,
+.admin-config-status {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.admin-stats > div {
+  padding: 18px;
+}
+
+.admin-stats span,
+.admin-config-status span {
+  color: rgba(247, 241, 230, 0.64);
+  font-size: 13px;
+}
+
+.admin-stats strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 30px;
+}
+
+.admin-table-wrap {
+  overflow: hidden;
+}
+
+.admin-table-title {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 9px;
+  padding: 14px 16px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.admin-table th {
+  color: rgba(247, 241, 230, 0.62);
+  font-weight: 600;
+}
+
+.paid-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(247, 241, 230, 0.76);
+  padding: 0 9px;
+}
+
+.paid-pill.paid {
+  background: rgba(75, 189, 126, 0.16);
+  color: #a8f1c5;
+}
+
+.table-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 241, 230, 0.84);
+  cursor: pointer;
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.table-action.danger {
+  border-color: rgba(255, 105, 105, 0.3);
+  color: #ffb4b4;
+}
+
+.table-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.api-config-form {
+  max-width: 720px;
+  padding: 20px;
+}
+
+.admin-config-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 720px;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -1872,7 +2126,8 @@ h2 {
   .calibration-grid,
   .report-section-list,
   .consultation-settings,
-  .consultation-layout {
+  .consultation-layout,
+  .profile-panel {
     grid-template-columns: 1fr;
   }
 
@@ -1884,7 +2139,7 @@ h2 {
     display: flex;
     overflow-x: auto;
     gap: 8px;
-    padding-bottom: 4px;
+    padding: 4px 0;
     scroll-snap-type: x proximity;
     scrollbar-width: none;
   }
@@ -2076,5 +2331,36 @@ h2 {
 
   .consultation-hub {
     padding: 16px;
+  }
+
+  .admin-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .admin-content {
+    padding: 18px;
+  }
+
+  .admin-content-head,
+  .admin-config-status {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table-wrap {
+    overflow-x: auto;
+  }
+
+  .admin-table {
+    min-width: 1080px;
   }
 }

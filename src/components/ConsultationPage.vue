@@ -3,7 +3,7 @@ import ConsultationHub from './ConsultationHub.vue';
 import type { LotteryInput, LuckyLotteryResult } from '../domain/lottery';
 
 defineProps<{
-  result: LuckyLotteryResult;
+  result: LuckyLotteryResult | null;
   form: LotteryInput;
 }>();
 

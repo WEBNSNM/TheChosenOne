@@ -16,17 +16,14 @@ const input = {
 
 describe('consultation scenes', () => {
   it('defines the paid-consultation-ready scenes', () => {
-    expect(consultationScenes).toHaveLength(9);
+    expect(consultationScenes).toHaveLength(6);
     expect(consultationScenes.map((scene) => scene.id)).toEqual([
-      'premium-chart-report',
       'screenshot-reading',
+      'premium-chart-report',
       'daily-depth',
-      'rhythm-report',
-      'element-personality',
       'relationship-observation',
       'career-rhythm',
-      'follow-up-chat',
-      'learning-coach',
+      'rhythm-report',
     ]);
   });
 

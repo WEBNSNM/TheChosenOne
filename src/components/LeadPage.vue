@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { SlidersHorizontal, X } from 'lucide-vue-next';
 import FortuneBoard from './FortuneBoard.vue';
 import FortuneForm from './FortuneForm.vue';
@@ -9,9 +9,14 @@ import type { LotteryInput, LuckyLotteryResult } from '../domain/lottery';
 
 const props = defineProps<{
   modelValue: LotteryInput;
-  result: LuckyLotteryResult;
+  result: LuckyLotteryResult | null;
   error: string;
+  promptChart?: boolean;
 }>();
+
+watch(() => props.promptChart, (value) => {
+  if (value) isChartModalOpen.value = true;
+});
 
 const emit = defineEmits<{
   'update:modelValue': [value: LotteryInput];
@@ -52,7 +57,7 @@ function submitChart(): void {
         <small>出生信息与深度报告</small>
       </button>
       <FortuneBoard :result="result" />
-      <SharePosterCard :result="result" :target-date="modelValue.targetDate" />
+      <SharePosterCard v-if="result" :result="result" :target-date="modelValue.targetDate" />
     </section>
 
     <Teleport to="body">

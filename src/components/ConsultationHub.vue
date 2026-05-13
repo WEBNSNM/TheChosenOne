@@ -1,67 +1,65 @@
 <script setup lang="ts">
 import {
   Bot,
-  CheckCircle2,
   ChevronDown,
-  KeyRound,
   LoaderCircle,
   MessageSquareText,
-  Save,
   Send,
   Settings2,
   ShieldCheck,
-  Trash2,
   UploadCloud,
+  User,
   XCircle,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import {
   buildConsultationMessages,
   consultationScenes,
   type ConsultationSceneId,
+  CURRENT_FOCUS_OPTIONS,
+  getChartMissingHint,
+  isChartComplete,
 } from '../domain/consultation';
-import { askDeepSeek, DEEPSEEK_MODELS, type DeepSeekModel } from '../domain/deepseekClient';
+import { submitAiChat } from '../domain/backendClient';
 import {
-  clearDeepSeekSettings,
-  loadDeepSeekSettings,
-  saveDeepSeekSettings,
+  loadUserProfile,
+  saveUserProfile,
 } from '../domain/deepseekSettings';
 import type { LotteryInput, LuckyLotteryResult } from '../domain/lottery';
 
 const props = defineProps<{
-  result: LuckyLotteryResult;
+  result: LuckyLotteryResult | null;
   form: LotteryInput;
 }>();
 
-const savedSettings = loadDeepSeekSettings();
 const selectedSceneId = ref<ConsultationSceneId>(consultationScenes[0].id);
-const apiKey = ref(savedSettings.apiKey);
-const model = ref<DeepSeekModel>(savedSettings.model);
 const userText = ref(consultationScenes[0].starter);
 const screenshotText = ref('');
 const answer = ref('');
 const error = ref('');
-const notice = ref('');
 const settingsOpen = ref(false);
+const profileOpen = ref(false);
 const isLoading = ref(false);
 const imagePreviewUrl = ref('');
 const imageName = ref('');
+const userProfile = reactive(loadUserProfile());
 let abortController: AbortController | undefined;
-let noticeTimer: ReturnType<typeof setTimeout> | undefined;
+let profileSaveTimer: ReturnType<typeof setTimeout> | undefined;
 
 const activeScene = computed(() => {
   return consultationScenes.find((scene) => scene.id === selectedSceneId.value) ?? consultationScenes[0];
 });
 
-const activeModel = computed(() => {
-  return DEEPSEEK_MODELS.find((item) => item.value === model.value) ?? DEEPSEEK_MODELS[0];
-});
-
 onBeforeUnmount(() => {
   clearPreview();
-  clearNoticeTimer();
+  if (profileSaveTimer) clearTimeout(profileSaveTimer);
   abortController?.abort();
 });
+
+watch(userProfile, () => {
+  if (profileSaveTimer) clearTimeout(profileSaveTimer);
+  profileSaveTimer = setTimeout(() => saveUserProfile({ ...userProfile }), 600);
+}, { deep: true });
 
 watch(
   () => [
@@ -93,23 +91,11 @@ function selectScene(sceneId: ConsultationSceneId): void {
   }
 }
 
-function saveSettings(): void {
-  saveDeepSeekSettings({ apiKey: apiKey.value, model: model.value });
-  showNotice('已保存到本机浏览器');
-}
-
-function clearSettings(): void {
-  clearDeepSeekSettings();
-  apiKey.value = '';
-  model.value = 'deepseek-v4-flash';
-  showNotice('已清除本机 Key');
-}
-
 async function submitConsultation(): Promise<void> {
   if (isLoading.value) return;
 
-  if (!apiKey.value.trim()) {
-    error.value = '请先填写 DeepSeek API Key。';
+  if (!isChartComplete(props.form) || !props.result) {
+    error.value = getChartMissingHint(props.form) || '请先在灵感入口生成命盘数据。';
     return;
   }
 
@@ -121,19 +107,16 @@ async function submitConsultation(): Promise<void> {
   try {
     const messages = buildConsultationMessages({
       sceneId: selectedSceneId.value,
-      result: props.result,
+      result: props.result!,
       form: props.form,
       userText: userText.value,
       screenshotText: screenshotText.value,
+      userProfile: { ...userProfile },
     });
 
-    answer.value = await askDeepSeek({
-      apiKey: apiKey.value,
+    answer.value = await submitAiChat({
       messages,
-      model: model.value,
-      signal: abortController.signal,
     });
-    saveDeepSeekSettings({ apiKey: apiKey.value, model: model.value });
   } catch (caught) {
     if (caught instanceof DOMException && caught.name === 'AbortError') {
       error.value = '已停止本次请求。';
@@ -179,20 +162,6 @@ function clearPreview(): void {
   imageName.value = '';
 }
 
-function showNotice(message: string): void {
-  notice.value = message;
-  clearNoticeTimer();
-  noticeTimer = setTimeout(() => {
-    notice.value = '';
-  }, 2200);
-}
-
-function clearNoticeTimer(): void {
-  if (noticeTimer) {
-    clearTimeout(noticeTimer);
-    noticeTimer = undefined;
-  }
-}
 </script>
 
 <template>
@@ -216,49 +185,53 @@ function clearNoticeTimer(): void {
       @click="settingsOpen = !settingsOpen"
     >
       <Settings2 :size="17" />
-      <span>模型设置</span>
-      <small>{{ activeModel.label }}</small>
+      <span>模型服务</span>
+      <small>由后台统一配置</small>
       <ChevronDown :size="18" :class="{ rotated: settingsOpen }" />
     </button>
 
-    <div v-if="settingsOpen" class="consultation-settings" aria-label="DeepSeek 设置">
-      <label class="field key-field">
-        <span>
-          <KeyRound :size="16" />
-          DeepSeek API Key
-        </span>
-        <input v-model="apiKey" type="password" autocomplete="off" placeholder="sk-..." />
+    <p v-if="settingsOpen" class="model-note">
+      <ShieldCheck :size="16" />
+      <span>模型、接口地址和 API Key 已迁移到后台配置，浏览器不会再保存真实密钥。</span>
+    </p>
+
+    <button
+      type="button"
+      class="settings-toggle"
+      :aria-expanded="profileOpen"
+      @click="profileOpen = !profileOpen"
+    >
+      <User :size="17" />
+      <span>个人背景</span>
+      <small>{{ userProfile.nickname || '选填，提升精准度' }}</small>
+      <ChevronDown :size="18" :class="{ rotated: profileOpen }" />
+    </button>
+
+    <div v-if="profileOpen" class="profile-panel" aria-label="个人背景">
+      <label class="field">
+        <span>称呼</span>
+        <input v-model="userProfile.nickname" type="text" placeholder="怎么称呼你" />
       </label>
 
-      <label class="field model-field">
-        <span>模型</span>
-        <select v-model="model">
-          <option v-for="item in DEEPSEEK_MODELS" :key="item.value" :value="item.value">
-            {{ item.label }}
+      <label class="field">
+        <span>职业 / 行业</span>
+        <input v-model="userProfile.occupation" type="text" placeholder="例如：互联网产品经理" />
+      </label>
+
+      <label class="field">
+        <span>当前最关注</span>
+        <select v-model="userProfile.currentFocus">
+          <option v-for="opt in CURRENT_FOCUS_OPTIONS" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
           </option>
         </select>
       </label>
 
-      <div class="settings-actions">
-        <button type="button" class="secondary-action accent" @click="saveSettings">
-          <Save :size="17" />
-          <span>保存</span>
-        </button>
-        <button type="button" class="secondary-action" @click="clearSettings">
-          <Trash2 :size="17" />
-          <span>清除</span>
-        </button>
-      </div>
+      <label class="field">
+        <span>补充说明</span>
+        <textarea v-model="userProfile.customNote" rows="2" placeholder="其他想让AI知道的背景信息" />
+      </label>
     </div>
-
-    <p v-if="settingsOpen" class="model-note">
-      <ShieldCheck :size="16" />
-      <span>{{ activeModel.description }} Key 仅保存在本机浏览器，请勿在公开环境长期使用。</span>
-    </p>
-    <p v-if="notice" class="inline-notice">
-      <CheckCircle2 :size="16" />
-      <span>{{ notice }}</span>
-    </p>
 
     <div class="consultation-layout">
       <nav class="scene-tabs" aria-label="咨询场景">

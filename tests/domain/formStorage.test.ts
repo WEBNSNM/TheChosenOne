@@ -47,6 +47,7 @@ describe('form storage', () => {
   it('restores a previously saved form', () => {
     const storage = new MemoryStorage();
     const saved: LotteryInput = {
+      customerName: '林一',
       birthDate: '2019-12-12',
       birthTime: '11:22',
       birthCalendar: 'lunar',

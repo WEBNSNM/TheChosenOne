@@ -49,6 +49,7 @@ function normalizeForm(defaults: LotteryInput, saved: PersistedForm): LotteryInp
   const birthCalendar = isCalendarMode(saved.birthCalendar) ? saved.birthCalendar : defaults.birthCalendar;
 
   const form: LotteryInput = {
+    customerName: normalizeOptionalText(saved.customerName, defaults.customerName),
     birthDate: isDateString(saved.birthDate) ? saved.birthDate : defaults.birthDate,
     birthTime: isTimeString(saved.birthTime) ? saved.birthTime : defaults.birthTime,
     birthCalendar,
@@ -82,6 +83,7 @@ function normalizeForm(defaults: LotteryInput, saved: PersistedForm): LotteryInp
 function toPersistedForm(form: LotteryInput): PersistedForm {
   return {
     birthDate: form.birthDate,
+    customerName: normalizeOptionalText(form.customerName),
     birthTime: form.birthTime,
     birthCalendar: form.birthCalendar ?? 'solar',
     birthLeapMonth: Boolean(form.birthLeapMonth),
@@ -92,6 +94,14 @@ function toPersistedForm(form: LotteryInput): PersistedForm {
     luckyNumbers: normalizeLuckyNumbers(form.luckyNumbers),
     strategy: form.strategy,
   };
+}
+
+function normalizeOptionalText(value: unknown, fallback?: string): string | undefined {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  return typeof fallback === 'string' ? fallback.trim() : fallback;
 }
 
 function normalizeBirthPlace(value: unknown, fallback?: string): string | undefined {

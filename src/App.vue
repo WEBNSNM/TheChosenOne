@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { CalendarDays, Maximize2, Sparkles, TicketCheck, X } from 'lucide-vue-next';
+import AdminApp from './components/AdminApp.vue';
 import ConsultationPage from './components/ConsultationPage.vue';
 import LeadPage from './components/LeadPage.vue';
+import { getClientId, submitChart } from './domain/backendClient';
+import { isChartComplete, getChartMissingHint } from './domain/consultation';
 import { loadSavedForm, saveForm } from './domain/formStorage';
 import { generateLuckyLottery, type LotteryInput, type LuckyLotteryResult } from './domain/lottery';
 
-type AppPage = 'numbers' | 'consultation';
+type AppPage = 'numbers' | 'consultation' | 'admin';
 
 const defaultForm: LotteryInput = {
-  birthDate: '1992-08-08',
-  birthTime: '08:30',
+  customerName: '',
+  birthDate: '',
+  birthTime: '',
   birthCalendar: 'solar',
   birthLeapMonth: false,
   gender: 'unspecified',
@@ -23,12 +27,14 @@ const defaultForm: LotteryInput = {
 };
 
 const form = ref<LotteryInput>(loadSavedForm(defaultForm));
-const result = ref<LuckyLotteryResult>(generateLuckyLottery(form.value));
+const result = ref<LuckyLotteryResult | null>(tryGenerate(form.value));
 const error = ref('');
 const currentPage = ref<AppPage>(getPageFromHash());
 const isHeroDetailOpen = ref(false);
 
-const transitLine = computed(() => result.value.profile.transit.pillars.map((pillar) => pillar.label).join(' · '));
+const transitLine = computed(() => {
+  return result.value?.profile.transit.pillars.map((pillar) => pillar.label).join(' · ') ?? '';
+});
 const heroCopy = computed(() => {
   if (currentPage.value === 'consultation') {
     return {
@@ -61,12 +67,46 @@ onBeforeUnmount(() => {
   window.removeEventListener('hashchange', syncPageFromHash);
 });
 
+const shouldOpenChart = ref(false);
+
 function generate(): void {
+  if (!isChartComplete(form.value)) {
+    error.value = getChartMissingHint(form.value) + '，才能生成灵感。';
+    shouldOpenChart.value = true;
+    return;
+  }
+  shouldOpenChart.value = false;
+
   try {
-    result.value = generateLuckyLottery(form.value);
+    const generated = generateLuckyLottery(form.value);
+    result.value = generated;
     error.value = '';
+    void persistChart(generated);
   } catch (caught) {
     error.value = caught instanceof Error ? caught.message : '生成失败，请检查输入';
+  }
+}
+
+async function persistChart(generated: LuckyLotteryResult): Promise<void> {
+  try {
+    await submitChart({
+      clientId: getClientId(),
+      displayName: form.value.customerName?.trim() || '',
+      form: form.value as unknown as Record<string, unknown>,
+      result: generated as unknown as Record<string, unknown>,
+    });
+  } catch {
+    // Backend persistence should not block the local chart experience.
+  }
+}
+
+function tryGenerate(input: LotteryInput): LuckyLotteryResult | null {
+  if (!isChartComplete(input)) return null;
+
+  try {
+    return generateLuckyLottery(input);
+  } catch {
+    return null;
   }
 }
 
@@ -75,6 +115,7 @@ function setPage(page: AppPage): void {
   isHeroDetailOpen.value = false;
 
   const hash = page === 'consultation' ? '#consultation' : '#numbers';
+  if (page === 'admin') return;
   if (window.location.hash !== hash) {
     window.location.hash = hash;
   }
@@ -88,6 +129,7 @@ function syncPageFromHash(): void {
 function getPageFromHash(): AppPage {
   if (typeof window === 'undefined') return 'numbers';
 
+  if (window.location.hash.startsWith('#/admin')) return 'admin';
   return window.location.hash === '#consultation' ? 'consultation' : 'numbers';
 }
 
@@ -100,7 +142,8 @@ function formatDate(date: Date): string {
 </script>
 
 <template>
-  <div class="app-shell">
+  <AdminApp v-if="currentPage === 'admin'" />
+  <div v-else class="app-shell">
     <header class="hero" :class="{ 'consultation-hero': currentPage === 'consultation' }">
       <nav class="topbar" aria-label="应用信息">
         <div class="brand-mark">
@@ -139,7 +182,7 @@ function formatDate(date: Date): string {
         <p class="kicker">{{ heroCopy.kicker }}</p>
         <h1>{{ heroCopy.title }}</h1>
         <p class="hero-lead">{{ heroCopy.lead }}</p>
-        <div v-if="currentPage === 'consultation'" class="hero-consultation-panel" aria-label="深度流日咨询摘要">
+        <div v-if="currentPage === 'consultation' && result" class="hero-consultation-panel" aria-label="深度流日咨询摘要">
           <button
             type="button"
             class="hero-detail-toggle"
@@ -161,7 +204,7 @@ function formatDate(date: Date): string {
           </div>
         </div>
 
-        <div v-else class="hero-metrics" aria-label="今日流日">
+        <div v-else-if="result" class="hero-metrics" aria-label="今日流日">
           <span>
             <strong>{{ result.profile.transit.day.label }}</strong>
             流日
@@ -184,7 +227,7 @@ function formatDate(date: Date): string {
 
     <Teleport to="body">
       <div
-        v-if="isHeroDetailOpen"
+        v-if="isHeroDetailOpen && result"
         class="hero-detail-modal"
         role="dialog"
         aria-modal="true"
@@ -268,6 +311,7 @@ function formatDate(date: Date): string {
       v-model="form"
       :result="result"
       :error="error"
+      :prompt-chart="shouldOpenChart"
       @submit="generate"
       @open-consultation="setPage('consultation')"
     />

@@ -102,7 +102,7 @@ describe('page layout contracts', () => {
     expect(source).toContain('.hero-consultation-panel');
     expect(source).toContain('.hero-detail-toggle');
     expect(source).toContain('.hero-detail-modal');
-    expect(source).toContain('overflow: visible;');
+    expect(source).toContain('.hero-detail-pillar-card');
     expect(source).toContain('.hero-suitable-tags span');
     expect(source).toContain('font-size: 0.78rem;');
   });

@@ -21,6 +21,7 @@ export interface Pillar {
 }
 
 export interface BaziInput {
+  customerName?: string;
   birthDate: string;
   birthTime: string;
   birthCalendar?: CalendarMode;
