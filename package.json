@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview --host 0.0.0.0",
+    "preview": "npm run build && wrangler dev",
     "test": "vitest run --poolOptions.threads.singleThread=true --poolOptions.threads.isolate=false",
-    "test:watch": "vitest --poolOptions.threads.singleThread=true --poolOptions.threads.isolate=false"
+    "test:watch": "vitest --poolOptions.threads.singleThread=true --poolOptions.threads.isolate=false",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "lucide-vue-next": "^0.468.0",
@@ -16,10 +17,12 @@
     "vue": "^3.5.13"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.36.4",
     "@vitejs/plugin-vue": "^5.2.1",
     "typescript": "~5.6.3",
     "vite": "^6.0.5",
     "vitest": "^2.1.8",
-    "vue-tsc": "^2.1.10"
+    "vue-tsc": "^2.1.10",
+    "wrangler": "^4.90.1"
   }
 }
