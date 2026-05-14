@@ -40,7 +40,45 @@ declare module 'lunar-javascript' {
     getMonth(): string;
     getDay(): string;
     getTime(): string;
+    getYearShiShenGan(): string;
+    getMonthShiShenGan(): string;
+    getDayShiShenGan(): string;
+    getTimeShiShenGan(): string;
+    getYearShiShenZhi(): string[];
+    getMonthShiShenZhi(): string[];
+    getDayShiShenZhi(): string[];
+    getTimeShiShenZhi(): string[];
+    getYearHideGan(): string[];
+    getMonthHideGan(): string[];
+    getDayHideGan(): string[];
+    getTimeHideGan(): string[];
+    getYearNaYin(): string;
+    getMonthNaYin(): string;
+    getDayNaYin(): string;
+    getTimeNaYin(): string;
+    getYearDiShi(): string;
+    getMonthDiShi(): string;
+    getDayDiShi(): string;
+    getTimeDiShi(): string;
+    getMingGong(): string;
+    getMingGongNaYin(): string;
+    getShenGong(): string;
+    getShenGongNaYin(): string;
+    getDayXunKong(): string;
+    getTimeXunKong(): string;
+    getYun(gender: number, sect?: number): Yun;
     toString(): string;
+  }
+
+  export interface Yun {
+    isForward(): boolean;
+    getDaYun(): DaYun[];
+  }
+
+  export interface DaYun {
+    getStartAge(): number;
+    getEndAge(): number;
+    getGanZhi(): string;
   }
 
   export const Solar: {

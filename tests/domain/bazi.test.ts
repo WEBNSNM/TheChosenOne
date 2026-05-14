@@ -39,6 +39,23 @@ describe('bazi pillar calculations', () => {
     expect(profile.targetInfo.almanac.tianShenType).toMatch(/黄道|黑道/);
   });
 
+  it('includes advanced bazi fields from lunar-javascript EightChar', () => {
+    const profile = getBaziProfile({
+      birthDate: '1992-08-08',
+      birthTime: '08:30',
+      birthCalendar: 'solar',
+      targetDate: '2026-05-09',
+    });
+
+    expect(profile.advanced?.shiShen.year.gan).toBeTruthy();
+    expect(profile.advanced?.hideGan.day.length).toBeGreaterThan(0);
+    expect(profile.advanced?.naYin.day).toBeTruthy();
+    expect(profile.advanced?.diShi.hour).toBeTruthy();
+    expect(profile.advanced?.palaces.ming).toMatch(/^[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]$/);
+    expect(profile.advanced?.kongWang.day).toBeTruthy();
+    expect(profile.daYun?.items.length).toBeGreaterThan(0);
+  });
+
   it('formats the target lunar date with the lunar year stem-branch instead of a confusing numeric year', () => {
     const profile = getBaziProfile({
       birthDate: '1992-08-08',
