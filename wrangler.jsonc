@@ -15,9 +15,10 @@
 	},
 	"d1_databases": [
 		{
-			"binding": "the_chosen_one",
+			"binding": "DB",
 			"database_name": "the-chosen-one",
-			"database_id": "dd008314-617f-453b-8280-72939ba30286"
+			"database_id": "dd008314-617f-453b-8280-72939ba30286",
+			"migrations_dir": "migrations"
 		}
 	],
 	"vars": {
