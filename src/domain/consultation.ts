@@ -257,13 +257,13 @@ function buildUserMessage(
     `咨询场景：${scene.title}`,
     '',
     '当前命盘上下文：',
-    buildChartContext(result, form, scene.id),
+    buildChartContext(result, form),
     screenshotText ? `\n截图文字信息：\n${screenshotText}` : '',
     `\n用户问题：${userText}`,
   ].filter(Boolean).join('\n');
 }
 
-function buildChartContext(result: LuckyLotteryResult, form: LotteryInput, sceneId: ConsultationSceneId): string {
+function buildChartContext(result: LuckyLotteryResult, form: LotteryInput): string {
   const profile = result.profile;
   const fortune = result.dailyFortune;
 

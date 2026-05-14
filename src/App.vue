@@ -125,11 +125,6 @@ function closeChartSetup(): void {
   setupModalRequiresProfile.value = false;
 }
 
-function openConsultationFromSetup(): void {
-  closeChartSetup();
-  setPage('consultation');
-}
-
 async function persistChart(generated: LuckyLotteryResult): Promise<void> {
   try {
     await submitChart({
