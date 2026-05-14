@@ -39,7 +39,13 @@ describe('backend client', () => {
       }
 
       if (url.endsWith('/api/admin/ai-config')) {
-        return new Response(JSON.stringify({ config: { provider: 'deepseek', hasApiKey: true } }));
+        return new Response(JSON.stringify({
+          config: {
+            provider: 'deepseek',
+            hasApiKey: true,
+            vision: { provider: 'vision', hasApiKey: true },
+          },
+        }));
       }
 
       if (url.endsWith('/api/charts')) {
@@ -65,7 +71,17 @@ describe('backend client', () => {
       baseUrl: 'https://api.deepseek.com/chat/completions',
       model: 'deepseek-v4-flash',
       apiKey: 'sk-test',
-    })).resolves.toEqual({ provider: 'deepseek', hasApiKey: true });
+      vision: {
+        provider: 'vision',
+        baseUrl: 'https://api.openai.com/v1/chat/completions',
+        model: 'vision-model',
+        apiKey: 'sk-vision',
+      },
+    })).resolves.toEqual({
+      provider: 'deepseek',
+      hasApiKey: true,
+      vision: { provider: 'vision', hasApiKey: true },
+    });
     await expect(submitChart({
       clientId: 'client-1',
       form: { customerName: '林一', birthDate: '1990-01-02' },

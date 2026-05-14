@@ -49,9 +49,17 @@ interface AdminUserRecord {
   role: string;
 }
 
+type AiMessage = {
+  role?: unknown;
+  content?: unknown;
+};
+
 const DEFAULT_AI_PROVIDER = 'deepseek';
 const DEFAULT_AI_BASE_URL = 'https://api.deepseek.com/chat/completions';
 const DEFAULT_AI_MODEL = 'deepseek-v4-flash';
+const VISION_AI_PROVIDER = 'vision';
+const DEFAULT_VISION_AI_BASE_URL = 'https://api.openai.com/v1/chat/completions';
+const DEFAULT_VISION_AI_MODEL = 'vision-model';
 
 export function createWorkerApp() {
   const routes: Route[] = [
@@ -186,8 +194,11 @@ async function deleteAdminUser({ env, params }: RequestContext): Promise<Respons
 }
 
 async function getAiConfig({ env }: RequestContext): Promise<Response> {
-  const record = await loadAiConfig(env);
-  return json({ config: toPublicAiConfig(record) });
+  const [record, visionRecord] = await Promise.all([
+    loadAiConfig(env, DEFAULT_AI_PROVIDER),
+    loadAiConfig(env, VISION_AI_PROVIDER),
+  ]);
+  return json({ config: toPublicAiConfig(record, visionRecord) });
 }
 
 async function saveAiConfig({ request, env }: RequestContext): Promise<Response> {
@@ -196,29 +207,51 @@ async function saveAiConfig({ request, env }: RequestContext): Promise<Response>
     baseUrl?: string;
     model?: string;
     apiKey?: string;
+    vision?: {
+      provider?: string;
+      baseUrl?: string;
+      model?: string;
+      apiKey?: string;
+    };
   }>(request);
   const provider = normalizeText(body.provider) || DEFAULT_AI_PROVIDER;
   const baseUrl = normalizeText(body.baseUrl) || DEFAULT_AI_BASE_URL;
   const model = normalizeText(body.model) || DEFAULT_AI_MODEL;
-  const existing = await loadAiConfig(env);
+  const existing = await loadAiConfig(env, DEFAULT_AI_PROVIDER);
   const apiKey = typeof body.apiKey === 'string' && body.apiKey.trim()
     ? body.apiKey.trim()
     : existing ? await decryptSecret(existing.encrypted_api_key, env.CONFIG_ENCRYPTION_KEY) : '';
   const encryptedApiKey = apiKey ? await encryptSecret(apiKey, env.CONFIG_ENCRYPTION_KEY) : '';
   const updatedAt = new Date().toISOString();
 
-  await env.DB.prepare(`INSERT OR REPLACE INTO ai_configs (provider, base_url, model, encrypted_api_key, updated_at)
-    VALUES (?, ?, ?, ?, ?)
-  `).bind(provider, baseUrl, model, encryptedApiKey, updatedAt).run();
+  const savedText = await saveAiConfigRecord(env, {
+    provider,
+    baseUrl,
+    model,
+    apiKey,
+    encryptedApiKey,
+    updatedAt,
+  });
+
+  const visionBody = body.vision ?? {};
+  const existingVision = await loadAiConfig(env, VISION_AI_PROVIDER);
+  const visionBaseUrl = normalizeText(visionBody.baseUrl) || existingVision?.base_url || DEFAULT_VISION_AI_BASE_URL;
+  const visionModel = normalizeText(visionBody.model) || existingVision?.model || DEFAULT_VISION_AI_MODEL;
+  const visionApiKey = typeof visionBody.apiKey === 'string' && visionBody.apiKey.trim()
+    ? visionBody.apiKey.trim()
+    : existingVision ? await decryptSecret(existingVision.encrypted_api_key, env.CONFIG_ENCRYPTION_KEY) : '';
+  const encryptedVisionApiKey = visionApiKey ? await encryptSecret(visionApiKey, env.CONFIG_ENCRYPTION_KEY) : '';
+  const savedVision = await saveAiConfigRecord(env, {
+    provider: VISION_AI_PROVIDER,
+    baseUrl: visionBaseUrl,
+    model: visionModel,
+    apiKey: visionApiKey,
+    encryptedApiKey: encryptedVisionApiKey,
+    updatedAt,
+  });
 
   return json({
-    config: {
-      provider,
-      baseUrl,
-      model,
-      hasApiKey: Boolean(apiKey),
-      updatedAt,
-    },
+    config: toPublicAiConfig(savedText, savedVision),
   });
 }
 
@@ -329,15 +362,16 @@ async function saveChart({ request, env }: RequestContext): Promise<Response> {
 }
 
 async function proxyAiChat({ request, env }: RequestContext): Promise<Response> {
-  const body = await readJson<{ messages?: unknown[]; model?: string }>(request);
+  const body = await readJson<{ messages?: AiMessage[]; model?: string }>(request);
 
   if (!Array.isArray(body.messages) || body.messages.length === 0) {
     return json({ error: '缺少 messages' }, 400);
   }
 
-  const config = await loadAiConfig(env);
+  const hasImage = messagesContainImage(body.messages);
+  const config = await loadAiConfig(env, hasImage ? VISION_AI_PROVIDER : DEFAULT_AI_PROVIDER);
   if (!config?.encrypted_api_key) {
-    return json({ error: '后台尚未配置模型 API Key' }, 400);
+    return json({ error: hasImage ? '后台尚未配置视觉模型 API Key' : '后台尚未配置模型 API Key' }, 400);
   }
 
   const startedAt = Date.now();
@@ -351,13 +385,7 @@ async function proxyAiChat({ request, env }: RequestContext): Promise<Response> 
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        messages: body.messages,
-        temperature: 0.7,
-        max_tokens: 1200,
-        thinking: { type: 'disabled' },
-      }),
+      body: JSON.stringify(buildAiPayload(model, body.messages)),
     });
     const payload = await response.json().catch(() => ({})) as {
       choices?: Array<{ message?: { content?: string | null } }>;
@@ -426,6 +454,42 @@ async function createPaymentOrder({ request, env }: RequestContext): Promise<Res
   return json({ orderId, orderNo, status: 'pending' });
 }
 
+function buildAiPayload(model: string, messages: AiMessage[]) {
+  const payload: {
+    model: string;
+    messages: AiMessage[];
+    temperature: number;
+    max_tokens: number;
+    thinking?: { type: 'disabled' };
+  } = {
+    model,
+    messages,
+    temperature: 0.7,
+    max_tokens: 4096,
+  };
+
+  // if (!messagesContainImage(messages)) {
+  //   payload.thinking = { type: 'disabled' };
+  // }
+
+  return payload;
+}
+
+function messagesContainImage(messages: AiMessage[]): boolean {
+  return messages.some((message) => {
+    if (!Array.isArray(message.content)) return false;
+
+    return message.content.some((part) => {
+      return Boolean(
+        part
+          && typeof part === 'object'
+          && 'type' in part
+          && (part as { type?: unknown }).type === 'image_url',
+      );
+    });
+  });
+}
+
 async function recordPaymentWebhook({ request, params }: RequestContext): Promise<Response> {
   const provider = normalizePaymentProvider(params.provider);
   const payloadText = await request.text();
@@ -438,21 +502,58 @@ async function recordPaymentWebhook({ request, params }: RequestContext): Promis
   });
 }
 
-async function loadAiConfig(env: WorkerEnv): Promise<AiConfigRecord | null> {
+async function loadAiConfig(env: WorkerEnv, provider = DEFAULT_AI_PROVIDER): Promise<AiConfigRecord | null> {
   return env.DB.prepare(`
     SELECT provider, base_url, model, encrypted_api_key, updated_at
     FROM ai_configs
     WHERE provider = ?
-  `).bind(DEFAULT_AI_PROVIDER).first<AiConfigRecord>();
+  `).bind(provider).first<AiConfigRecord>();
 }
 
-function toPublicAiConfig(record: AiConfigRecord | null) {
+async function saveAiConfigRecord(
+  env: WorkerEnv,
+  config: {
+    provider: string;
+    baseUrl: string;
+    model: string;
+    apiKey: string;
+    encryptedApiKey: string;
+    updatedAt: string;
+  },
+): Promise<AiConfigRecord> {
+  await env.DB.prepare(`INSERT OR REPLACE INTO ai_configs (provider, base_url, model, encrypted_api_key, updated_at)
+    VALUES (?, ?, ?, ?, ?)
+  `).bind(
+    config.provider,
+    config.baseUrl,
+    config.model,
+    config.encryptedApiKey,
+    config.updatedAt,
+  ).run();
+
+  return {
+    provider: config.provider,
+    base_url: config.baseUrl,
+    model: config.model,
+    encrypted_api_key: config.encryptedApiKey,
+    updated_at: config.updatedAt,
+  };
+}
+
+function toPublicAiConfig(record: AiConfigRecord | null, visionRecord?: AiConfigRecord | null) {
   return {
     provider: record?.provider ?? DEFAULT_AI_PROVIDER,
     baseUrl: record?.base_url ?? DEFAULT_AI_BASE_URL,
     model: record?.model ?? DEFAULT_AI_MODEL,
     hasApiKey: Boolean(record?.encrypted_api_key),
     updatedAt: record?.updated_at ?? '',
+    vision: {
+      provider: visionRecord?.provider ?? VISION_AI_PROVIDER,
+      baseUrl: visionRecord?.base_url ?? DEFAULT_VISION_AI_BASE_URL,
+      model: visionRecord?.model ?? DEFAULT_VISION_AI_MODEL,
+      hasApiKey: Boolean(visionRecord?.encrypted_api_key),
+      updatedAt: visionRecord?.updated_at ?? '',
+    },
   };
 }
 

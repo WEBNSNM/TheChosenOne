@@ -34,15 +34,27 @@ describe('page layout contracts', () => {
     expect(source).toContain(':target-date="modelValue.targetDate"');
   });
 
-  it('keeps chart input and paid report together in a focused modal', () => {
-    const source = readSource('src/components/LeadPage.vue');
+  it('keeps chart input in a focused modal and paid report on the lead page', () => {
+    const modalSource = readSource('src/components/ChartSetupModal.vue');
+    const leadSource = readSource('src/components/LeadPage.vue');
+    const appSource = readSource('src/App.vue');
 
-    expect(source).toContain('const isChartModalOpen = ref(false)');
-    expect(source).toContain('class="chart-entry-card"');
-    expect(source).toContain('class="chart-modal"');
-    expect(source.indexOf('<FortuneForm')).toBeLessThan(source.indexOf('<PremiumReportPreview'));
-    expect(source).not.toContain("import ChartCalibrationCard");
-    expect(source).not.toContain('<ChartCalibrationCard');
+    expect(appSource).toContain('const isSetupModalOpen = ref(false)');
+    expect(appSource).toContain('<ChartSetupModal');
+    expect(modalSource).toContain('class="chart-modal"');
+    expect(modalSource).toContain('<FortuneForm');
+    expect(modalSource).not.toContain('<PremiumReportPreview');
+    expect(leadSource).toContain('<PremiumReportPreview');
+  });
+
+  it('uses a separate inspiration button and renames the chart form submit', () => {
+    const leadSource = readSource('src/components/LeadPage.vue');
+    const formSource = readSource('src/components/FortuneForm.vue');
+
+    expect(leadSource).toContain('class="primary-action inspiration-action"');
+    expect(leadSource).toContain('<span>生成灵感</span>');
+    expect(leadSource).toContain("@click=\"emit('submit')\"");
+    expect(formSource).toContain('<span>保存命盘并生成</span>');
   });
 
   it('styles the chart modal as a compact mobile-first surface', () => {
@@ -52,6 +64,25 @@ describe('page layout contracts', () => {
     expect(source).toContain('.chart-modal');
     expect(source).toContain('.chart-modal-shell');
     expect(source).toContain('max-height: min(88vh, 760px);');
+  });
+
+  it('prevents long form text from creating horizontal scrolling', () => {
+    const source = readSource('src/style.css');
+
+    expect(source).toContain('max-width: 100%;');
+    expect(source).toContain('min-width: 0;');
+    expect(source).toContain('overflow-x: hidden;');
+    expect(source).toContain('overflow-wrap: anywhere;');
+    expect(source).toContain('word-break: break-word;');
+  });
+
+  it('keeps long uploaded image names inside the upload control', () => {
+    const source = readSource('src/style.css');
+
+    expect(source).toContain('width: min(100%, 360px);');
+    expect(source).toContain('.upload-drop span');
+    expect(source).toContain('text-overflow: ellipsis;');
+    expect(source).toContain('white-space: nowrap;');
   });
 
   it('puts the daily consultation summary directly in the consultation hero', () => {
@@ -107,11 +138,23 @@ describe('page layout contracts', () => {
     expect(source).toContain('font-size: 0.78rem;');
   });
 
-  it('starts the consultation hub with model settings collapsed', () => {
+  it('requests the shared setup modal for missing chart or required profile', () => {
     const source = readSource('src/components/ConsultationHub.vue');
 
-    expect(source).toContain('const settingsOpen = ref(false)');
-    expect(source).toContain('v-if="settingsOpen"');
+    expect(source).toContain('emit(\'requestSetup\'');
+    expect(source).toContain('sceneRequiresUserProfile(selectedSceneId.value)');
+    expect(source).toContain('!isUserProfileFilled(props.userProfile)');
+    expect(source).toContain('profileRequired: true');
+  });
+
+  it('removes user-side model service configuration from consultation hub', () => {
+    const source = readSource('src/components/ConsultationHub.vue');
+
+    expect(source).not.toContain('模型服务');
+    expect(source).not.toContain('settingsOpen');
+    expect(source).not.toContain('Settings2');
+    expect(source).not.toContain('ShieldCheck');
+    expect(source).not.toContain('model-note');
     expect(source).toContain('class="settings-toggle"');
   });
 });

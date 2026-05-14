@@ -25,8 +25,15 @@ const aiConfig = ref<AiConfigView>({
   baseUrl: 'https://api.deepseek.com/chat/completions',
   model: 'deepseek-v4-flash',
   hasApiKey: false,
+  vision: {
+    provider: 'vision',
+    baseUrl: 'https://api.openai.com/v1/chat/completions',
+    model: 'vision-model',
+    hasApiKey: false,
+  },
 });
 const apiKey = ref('');
+const visionApiKey = ref('');
 const isLoading = ref(false);
 const message = ref('');
 const error = ref('');
@@ -78,6 +85,13 @@ async function loadDashboard(): Promise<void> {
       model: config.model || 'deepseek-v4-flash',
       hasApiKey: Boolean(config.hasApiKey),
       updatedAt: config.updatedAt,
+      vision: {
+        provider: config.vision.provider || 'vision',
+        baseUrl: config.vision.baseUrl || 'https://api.openai.com/v1/chat/completions',
+        model: config.vision.model || 'vision-model',
+        hasApiKey: Boolean(config.vision.hasApiKey),
+        updatedAt: config.vision.updatedAt,
+      },
     };
   } catch (caught) {
     error.value = caught instanceof Error ? caught.message : '后台数据加载失败';
@@ -100,9 +114,16 @@ async function submitAiConfig(): Promise<void> {
       baseUrl: aiConfig.value.baseUrl || '',
       model: aiConfig.value.model || '',
       apiKey: apiKey.value,
+      vision: {
+        provider: 'vision',
+        baseUrl: aiConfig.value.vision.baseUrl || '',
+        model: aiConfig.value.vision.model || '',
+        apiKey: visionApiKey.value,
+      },
     });
     aiConfig.value = saved;
     apiKey.value = '';
+    visionApiKey.value = '';
     message.value = 'API 配置已保存';
   } catch (caught) {
     error.value = caught instanceof Error ? caught.message : '保存失败';
@@ -327,22 +348,41 @@ function formatCalendar(value?: string): string {
 
         <section v-else class="admin-page api-config-page">
           <form class="api-config-form" @submit.prevent="submitAiConfig">
-            <label class="field">
-              <span>Provider</span>
-              <input v-model="aiConfig.provider" type="text" placeholder="deepseek" />
-            </label>
-            <label class="field">
-              <span>Base URL</span>
-              <input v-model="aiConfig.baseUrl" type="url" placeholder="https://api.deepseek.com/chat/completions" />
-            </label>
-            <label class="field">
-              <span>Model</span>
-              <input v-model="aiConfig.model" type="text" placeholder="deepseek-v4-flash" />
-            </label>
-            <label class="field">
-              <span>API Key</span>
-              <input v-model="apiKey" type="password" autocomplete="off" :placeholder="aiConfig.hasApiKey ? '已保存，留空保持不变' : '请输入 API Key'" />
-            </label>
+            <div class="api-config-group">
+              <h3>默认文本模型</h3>
+              <label class="field">
+                <span>Provider</span>
+                <input v-model="aiConfig.provider" type="text" placeholder="deepseek" />
+              </label>
+              <label class="field">
+                <span>Base URL</span>
+                <input v-model="aiConfig.baseUrl" type="url" placeholder="https://api.deepseek.com/chat/completions" />
+              </label>
+              <label class="field">
+                <span>Model</span>
+                <input v-model="aiConfig.model" type="text" placeholder="deepseek-v4-flash" />
+              </label>
+              <label class="field">
+                <span>API Key</span>
+                <input v-model="apiKey" type="password" autocomplete="off" :placeholder="aiConfig.hasApiKey ? '已保存，留空保持不变' : '请输入 API Key'" />
+              </label>
+            </div>
+
+            <div class="api-config-group">
+              <h3>看图读盘视觉模型</h3>
+              <label class="field">
+                <span>Vision Base URL</span>
+                <input v-model="aiConfig.vision.baseUrl" type="url" placeholder="https://api.openai.com/v1/chat/completions" />
+              </label>
+              <label class="field">
+                <span>Vision Model</span>
+                <input v-model="aiConfig.vision.model" type="text" placeholder="填写支持 image_url 的模型" />
+              </label>
+              <label class="field">
+                <span>Vision API Key</span>
+                <input v-model="visionApiKey" type="password" autocomplete="off" :placeholder="aiConfig.vision.hasApiKey ? '已保存，留空保持不变' : '请输入视觉模型 API Key'" />
+              </label>
+            </div>
             <button type="submit" class="primary-action" :disabled="isLoading">
               <Save :size="18" />
               <span>保存配置</span>
@@ -350,7 +390,8 @@ function formatCalendar(value?: string): string {
           </form>
 
           <div class="admin-config-status">
-            <strong>{{ aiConfig.hasApiKey ? '已配置密钥' : '未配置密钥' }}</strong>
+            <strong>文本模型：{{ aiConfig.hasApiKey ? '已配置密钥' : '未配置密钥' }}</strong>
+            <span>视觉模型：{{ aiConfig.vision.hasApiKey ? '已配置密钥' : '未配置密钥' }}</span>
             <span>更新时间：{{ formatTime(aiConfig.updatedAt) }}</span>
           </div>
         </section>

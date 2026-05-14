@@ -379,6 +379,10 @@ describe('worker api', () => {
         provider: 'deepseek',
         model: 'deepseek-v4-flash',
         hasApiKey: true,
+        vision: expect.objectContaining({
+          provider: 'vision',
+          hasApiKey: false,
+        }),
       }),
     });
 
@@ -399,12 +403,97 @@ describe('worker api', () => {
     );
 
     await expect(aiResponse.json()).resolves.toEqual({ content: '后端模型返回' });
+    const textBody = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(textBody.thinking).toEqual({ type: 'disabled' });
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.test/chat/completions',
       expect.objectContaining({
         headers: expect.objectContaining({ Authorization: 'Bearer sk-secret' }),
       }),
     );
+    vi.unstubAllGlobals();
+  });
+
+  it('forwards multimodal image messages to the configured model endpoint', async () => {
+    const db = new MemoryD1Database();
+    db.adminUsers.set('admin', {
+      username: 'admin',
+      password_hash: 'plain:secret',
+      role: 'owner',
+    });
+    const env = createEnv(db);
+    const app = createWorkerApp();
+    const { token } = await login(app, env);
+
+    await app.fetch(
+      new Request('https://example.com/api/admin/ai-config', {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          provider: 'deepseek',
+          baseUrl: 'https://api.text.test/chat/completions',
+          model: 'text-model',
+          apiKey: 'sk-text',
+          vision: {
+            provider: 'vision',
+            baseUrl: 'https://api.vision.test/chat/completions',
+            model: 'vision-model',
+            apiKey: 'sk-vision',
+          },
+        }),
+      }),
+      env,
+    );
+
+    const fetchMock = vi.fn(async () => new Response(
+      JSON.stringify({ choices: [{ message: { content: '模型返回' } }] }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    ));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const textResponse = await app.fetch(
+      new Request('https://example.com/api/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: '普通文本解读' }],
+        }),
+      }),
+      env,
+    );
+    await expect(textResponse.json()).resolves.toEqual({ content: '模型返回' });
+    let forwardedBody = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.text.test/chat/completions');
+    expect(fetchMock.mock.calls[0][1]?.headers).toEqual(expect.objectContaining({ Authorization: 'Bearer sk-text' }));
+    expect(forwardedBody.model).toBe('text-model');
+
+    const aiResponse = await app.fetch(
+      new Request('https://example.com/api/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: [
+                { type: 'text', text: '请看这张命盘截图。' },
+                { type: 'image_url', image_url: { url: 'data:image/png;base64,abc' } },
+              ],
+            },
+          ],
+        }),
+      }),
+      env,
+    );
+
+    await expect(aiResponse.json()).resolves.toEqual({ content: '模型返回' });
+    forwardedBody = JSON.parse(String(fetchMock.mock.calls[1][1]?.body));
+    expect(forwardedBody.model).toBe('vision-model');
+    expect(forwardedBody.thinking).toBeUndefined();
+    expect(fetchMock.mock.calls[1][0]).toBe('https://api.vision.test/chat/completions');
+    expect(fetchMock.mock.calls[1][1]?.headers).toEqual(expect.objectContaining({ Authorization: 'Bearer sk-vision' }));
+    expect(forwardedBody.messages[0].content[1]).toEqual({
+      type: 'image_url',
+      image_url: { url: 'data:image/png;base64,abc' },
+    });
     vi.unstubAllGlobals();
   });
 });

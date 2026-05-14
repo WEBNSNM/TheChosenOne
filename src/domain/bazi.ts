@@ -55,6 +55,8 @@ export interface BaziProfile {
     stem: HeavenlyStem;
     element: ElementName;
   };
+  advanced?: AdvancedBaziData;
+  daYun?: DaYunData;
 }
 
 export interface ResolvedCalendarInfo {
@@ -64,6 +66,32 @@ export interface ResolvedCalendarInfo {
   solarDate: string;
   lunarText: string;
   lunarDateText: string;
+}
+
+export interface ShiShenInfo {
+  gan: string;
+  zhiHidden: string[];
+}
+
+export interface AdvancedBaziData {
+  shiShen: { year: ShiShenInfo; month: ShiShenInfo; day: ShiShenInfo; hour: ShiShenInfo };
+  hideGan: { year: string[]; month: string[]; day: string[]; hour: string[] };
+  naYin: { year: string; month: string; day: string; hour: string };
+  diShi: { year: string; month: string; day: string; hour: string };
+  palaces: { ming: string; mingNaYin: string; shen: string; shenNaYin: string };
+  kongWang: { day: string; time: string };
+}
+
+export interface DaYunItem {
+  startAge: number;
+  endAge: number;
+  ganZhi: string;
+}
+
+export interface DaYunData {
+  forward: boolean;
+  items: DaYunItem[];
+  currentGanZhi: string;
 }
 
 export interface AlmanacInfo {
@@ -176,6 +204,8 @@ export function getBaziProfile(input: BaziInput): BaziProfile {
       stem: birth.day.stem,
       element: birth.day.element,
     },
+    advanced: getAdvancedBaziData(birthDateTime),
+    daYun: getDaYunData(birthDateTime, input.gender ?? 'unspecified'),
   };
 }
 
@@ -195,6 +225,79 @@ export function getAlmanacInfo(date: Date): AlmanacInfo {
     zhiXing: lunar.getZhiXing(),
     tianShen: lunar.getDayTianShen(),
     tianShenType: lunar.getDayTianShenType(),
+  };
+}
+
+export function getAdvancedBaziData(date: Date): AdvancedBaziData {
+  const ec = getEightChar(date);
+
+  return {
+    shiShen: {
+      year: { gan: ec.getYearShiShenGan(), zhiHidden: ec.getYearShiShenZhi() },
+      month: { gan: ec.getMonthShiShenGan(), zhiHidden: ec.getMonthShiShenZhi() },
+      day: { gan: ec.getDayShiShenGan(), zhiHidden: ec.getDayShiShenZhi() },
+      hour: { gan: ec.getTimeShiShenGan(), zhiHidden: ec.getTimeShiShenZhi() },
+    },
+    hideGan: {
+      year: ec.getYearHideGan(),
+      month: ec.getMonthHideGan(),
+      day: ec.getDayHideGan(),
+      hour: ec.getTimeHideGan(),
+    },
+    naYin: {
+      year: ec.getYearNaYin(),
+      month: ec.getMonthNaYin(),
+      day: ec.getDayNaYin(),
+      hour: ec.getTimeNaYin(),
+    },
+    diShi: {
+      year: ec.getYearDiShi(),
+      month: ec.getMonthDiShi(),
+      day: ec.getDayDiShi(),
+      hour: ec.getTimeDiShi(),
+    },
+    palaces: {
+      ming: ec.getMingGong(),
+      mingNaYin: ec.getMingGongNaYin(),
+      shen: ec.getShenGong(),
+      shenNaYin: ec.getShenGongNaYin(),
+    },
+    kongWang: {
+      day: ec.getDayXunKong(),
+      time: ec.getTimeXunKong(),
+    },
+  };
+}
+
+export function getDaYunData(date: Date, gender: BirthGender): DaYunData {
+  const ec = getEightChar(date);
+  const genderNum = gender === 'female' ? 0 : 1;
+  const yun = ec.getYun(genderNum, 2);
+  const daYunList = yun.getDaYun();
+
+  const now = new Date();
+  const age = now.getFullYear() - date.getFullYear();
+
+  const items: DaYunItem[] = [];
+  let currentGanZhi = '';
+
+  for (const dy of daYunList) {
+    const ganZhi = dy.getGanZhi();
+    if (!ganZhi) continue;
+
+    const startAge = dy.getStartAge();
+    const endAge = dy.getEndAge();
+    items.push({ startAge, endAge, ganZhi });
+
+    if (age >= startAge && age < endAge) {
+      currentGanZhi = ganZhi;
+    }
+  }
+
+  return {
+    forward: yun.isForward(),
+    items,
+    currentGanZhi,
   };
 }
 

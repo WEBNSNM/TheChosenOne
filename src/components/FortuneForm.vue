@@ -357,9 +357,11 @@ function toggleLuckyNumber(value: number): void {
       </div>
     </div>
 
+    <slot name="before-submit" />
+
     <button class="primary-action" type="submit">
       <WandSparkles :size="18" />
-      <span>生成灵感</span>
+      <span>保存命盘并生成</span>
     </button>
   </form>
 </template>

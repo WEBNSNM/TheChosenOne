@@ -574,6 +574,8 @@ h2 {
 .field select,
 .field textarea {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 46px;
   padding: 0 12px;
   border: 1px solid rgba(246, 239, 225, 0.14);
@@ -592,6 +594,9 @@ h2 {
   padding: 12px;
   resize: vertical;
   line-height: 1.65;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .field input:focus,
@@ -741,6 +746,10 @@ h2 {
   color: #111827;
   font-weight: 900;
   background: linear-gradient(135deg, #f6c866, #f2e3b0 48%, #4fd6bd);
+}
+
+.inspiration-action {
+  width: 100%;
 }
 
 .result-stack {
@@ -1398,6 +1407,14 @@ h2 {
   min-height: 60px;
 }
 
+.chart-profile-panel {
+  margin-top: 0;
+}
+
+.profile-required-note {
+  width: 100%;
+}
+
 .consultation-layout {
   display: grid;
   grid-template-columns: minmax(150px, 0.32fr) minmax(0, 1fr);
@@ -1501,10 +1518,13 @@ h2 {
 }
 
 .upload-drop {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
+  width: min(100%, 360px);
+  max-width: 100%;
+  min-width: 0;
   min-height: 52px;
   padding: 0 14px;
   border: 1px dashed rgba(246, 239, 225, 0.28);
@@ -1513,6 +1533,18 @@ h2 {
   font-weight: 900;
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
+}
+
+.upload-drop svg {
+  flex: 0 0 auto;
+}
+
+.upload-drop span {
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .upload-drop input {
@@ -1627,15 +1659,129 @@ h2 {
 
 .consultation-answer {
   display: grid;
-  gap: 10px;
+  gap: 0;
   padding-top: 14px;
   border-top: 1px solid var(--line);
 }
 
-.consultation-answer div {
-  white-space: pre-wrap;
-  color: #edf3ff;
+/* ── 报告头部 ── */
+.answer-report-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(246, 200, 102, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(246, 200, 102, 0.1), rgba(79, 214, 189, 0.06) 60%, transparent),
+    rgba(255, 255, 255, 0.04);
+}
+
+.answer-report-head svg {
+  flex: 0 0 auto;
+  color: var(--gold);
+}
+
+.answer-report-head div {
+  min-width: 0;
+}
+
+.answer-report-head span {
+  color: #fffaf0;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.answer-report-head small {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* ── 报告正文 ── */
+.answer-report-body {
+  padding: 20px 0 8px;
+  color: #e4ebfa;
+  font-size: 0.94rem;
+  line-height: 1.88;
+}
+
+.answer-report-body h1,
+.answer-report-body h2,
+.answer-report-body h3,
+.answer-report-body h4 {
+  position: relative;
+  margin: 28px 0 14px;
+  padding: 0 0 10px 16px;
+  border-bottom: 1px solid rgba(246, 239, 225, 0.08);
+  border-left: 3px solid var(--gold);
+  color: #fffaf0;
+  font-size: 1.08rem;
+  letter-spacing: 0;
+}
+
+.answer-report-body h1:first-child,
+.answer-report-body h2:first-child,
+.answer-report-body h3:first-child,
+.answer-report-body h4:first-child {
+  margin-top: 0;
+}
+
+.answer-report-body p {
+  margin: 0 0 14px;
+}
+
+.answer-report-body strong {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.answer-report-body em {
+  color: #c5cee4;
+  font-style: normal;
+  border-bottom: 1px dashed rgba(246, 239, 225, 0.2);
+}
+
+.answer-report-body ul {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.answer-report-body li {
+  position: relative;
+  margin-bottom: 10px;
+  padding: 12px 14px 12px 28px;
+  border: 1px solid rgba(246, 239, 225, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.answer-report-body li::before {
+  position: absolute;
+  top: 16px;
+  left: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--jade);
+  box-shadow: 0 0 6px rgba(79, 214, 189, 0.4);
+  content: "";
+}
+
+/* 最后一个段落（总结）特殊样式 */
+.answer-report-body > p:last-child {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid rgba(246, 200, 102, 0.2);
+  border-radius: 8px;
+  color: #fff7e8;
+  font-weight: 700;
   line-height: 1.82;
+  background:
+    linear-gradient(135deg, rgba(246, 200, 102, 0.08), rgba(79, 214, 189, 0.06)),
+    rgba(255, 255, 255, 0.03);
 }
 
 .consultation-empty {
@@ -2087,6 +2233,19 @@ h2 {
 .api-config-form {
   max-width: 720px;
   padding: 20px;
+}
+
+.api-config-group {
+  display: grid;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.api-config-group h3 {
+  margin: 0;
+  color: #fffaf0;
+  font-size: 16px;
 }
 
 .admin-config-status {

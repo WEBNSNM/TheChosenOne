@@ -5,31 +5,36 @@ import {
   LoaderCircle,
   MessageSquareText,
   Send,
-  Settings2,
-  ShieldCheck,
   UploadCloud,
   User,
   XCircle,
 } from 'lucide-vue-next';
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { FileText } from 'lucide-vue-next';
+import UserProfileFields from './UserProfileFields.vue';
 import {
   buildConsultationMessages,
   consultationScenes,
   type ConsultationSceneId,
-  CURRENT_FOCUS_OPTIONS,
   getChartMissingHint,
+  isUserProfileFilled,
   isChartComplete,
+  sceneRequiresUserProfile,
+  type UserProfile,
 } from '../domain/consultation';
 import { submitAiChat } from '../domain/backendClient';
-import {
-  loadUserProfile,
-  saveUserProfile,
-} from '../domain/deepseekSettings';
+import type { DeepSeekMessage } from '../domain/deepseekClient';
 import type { LotteryInput, LuckyLotteryResult } from '../domain/lottery';
 
 const props = defineProps<{
   result: LuckyLotteryResult | null;
   form: LotteryInput;
+  userProfile: UserProfile;
+}>();
+
+const emit = defineEmits<{
+  'update:userProfile': [value: UserProfile];
+  requestSetup: [options: { includeProfile: boolean; profileRequired: boolean }];
 }>();
 
 const selectedSceneId = ref<ConsultationSceneId>(consultationScenes[0].id);
@@ -37,29 +42,75 @@ const userText = ref(consultationScenes[0].starter);
 const screenshotText = ref('');
 const answer = ref('');
 const error = ref('');
-const settingsOpen = ref(false);
 const profileOpen = ref(false);
 const isLoading = ref(false);
 const imagePreviewUrl = ref('');
+const imageDataUrl = ref('');
 const imageName = ref('');
-const userProfile = reactive(loadUserProfile());
 let abortController: AbortController | undefined;
-let profileSaveTimer: ReturnType<typeof setTimeout> | undefined;
+const answerTime = ref('');
+
+function parseMarkdown(raw: string): string {
+  const lines = raw.split('\n');
+  const html: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      if (inList) { html.push('</ul>'); inList = false; }
+      continue;
+    }
+
+    // 标题 ### / ## / #
+    const headingMatch = trimmed.match(/^(#{1,4})\s+(.+)$/);
+    if (headingMatch) {
+      if (inList) { html.push('</ul>'); inList = false; }
+      const level = headingMatch[1].length;
+      const tag = `h${level}`;
+      html.push(`<${tag}>${inlineMarkdown(headingMatch[2])}</${tag}>`);
+      continue;
+    }
+
+    // 列表项 * 或 -
+    const listMatch = trimmed.match(/^[*\-]\s+(.+)$/);
+    if (listMatch) {
+      if (!inList) { html.push('<ul>'); inList = true; }
+      html.push(`<li>${inlineMarkdown(listMatch[1])}</li>`);
+      continue;
+    }
+
+    // 普通段落
+    if (inList) { html.push('</ul>'); inList = false; }
+    html.push(`<p>${inlineMarkdown(trimmed)}</p>`);
+  }
+
+  if (inList) html.push('</ul>');
+  return html.join('\n');
+}
+
+function inlineMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+
+const renderedAnswer = computed(() => answer.value ? parseMarkdown(answer.value) : '');
 
 const activeScene = computed(() => {
   return consultationScenes.find((scene) => scene.id === selectedSceneId.value) ?? consultationScenes[0];
 });
 
-onBeforeUnmount(() => {
-  clearPreview();
-  if (profileSaveTimer) clearTimeout(profileSaveTimer);
-  abortController?.abort();
+const profileProxy = computed({
+  get: () => props.userProfile,
+  set: (value: UserProfile) => emit('update:userProfile', value),
 });
 
-watch(userProfile, () => {
-  if (profileSaveTimer) clearTimeout(profileSaveTimer);
-  profileSaveTimer = setTimeout(() => saveUserProfile({ ...userProfile }), 600);
-}, { deep: true });
+onBeforeUnmount(() => {
+  clearPreview();
+  abortController?.abort();
+});
 
 watch(
   () => [
@@ -96,6 +147,19 @@ async function submitConsultation(): Promise<void> {
 
   if (!isChartComplete(props.form) || !props.result) {
     error.value = getChartMissingHint(props.form) || '请先在灵感入口生成命盘数据。';
+    emit('requestSetup', {
+      includeProfile: sceneRequiresUserProfile(selectedSceneId.value) && !isUserProfileFilled(props.userProfile),
+      profileRequired: sceneRequiresUserProfile(selectedSceneId.value) && !isUserProfileFilled(props.userProfile),
+    });
+    return;
+  }
+
+  if (sceneRequiresUserProfile(selectedSceneId.value) && !isUserProfileFilled(props.userProfile)) {
+    error.value = '这个深度场景需要先补充个人背景。';
+    emit('requestSetup', {
+      includeProfile: true,
+      profileRequired: true,
+    });
     return;
   }
 
@@ -111,12 +175,13 @@ async function submitConsultation(): Promise<void> {
       form: props.form,
       userText: userText.value,
       screenshotText: screenshotText.value,
-      userProfile: { ...userProfile },
+      userProfile: { ...props.userProfile },
     });
 
     answer.value = await submitAiChat({
-      messages,
+      messages: withScreenshotImage(messages),
     });
+    answerTime.value = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   } catch (caught) {
     if (caught instanceof DOMException && caught.name === 'AbortError') {
       error.value = '已停止本次请求。';
@@ -135,7 +200,7 @@ function stopConsultation(): void {
   abortController?.abort();
 }
 
-function handleImageUpload(event: Event): void {
+async function handleImageUpload(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
 
@@ -148,9 +213,16 @@ function handleImageUpload(event: Event): void {
   }
 
   clearPreview();
-  imageName.value = file.name;
-  imagePreviewUrl.value = URL.createObjectURL(file);
-  input.value = '';
+  try {
+    imageName.value = file.name;
+    imagePreviewUrl.value = URL.createObjectURL(file);
+    imageDataUrl.value = await readFileAsDataUrl(file);
+  } catch {
+    clearPreview();
+    error.value = '图片读取失败，请重新上传。';
+  } finally {
+    input.value = '';
+  }
 }
 
 function clearPreview(): void {
@@ -159,7 +231,41 @@ function clearPreview(): void {
   }
 
   imagePreviewUrl.value = '';
+  imageDataUrl.value = '';
   imageName.value = '';
+}
+
+function withScreenshotImage(messages: DeepSeekMessage[]): DeepSeekMessage[] {
+  if (selectedSceneId.value !== 'screenshot-reading' || !imageDataUrl.value) return messages;
+
+  const lastMessage = messages[messages.length - 1];
+  if (!lastMessage || lastMessage.role !== 'user' || typeof lastMessage.content !== 'string') return messages;
+
+  return [
+    ...messages.slice(0, -1),
+    {
+      ...lastMessage,
+      content: [
+        { type: 'text', text: lastMessage.content },
+        { type: 'image_url', image_url: { url: imageDataUrl.value } },
+      ],
+    },
+  ];
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('empty image data'));
+      }
+    });
+    reader.addEventListener('error', () => reject(reader.error ?? new Error('image read failed')));
+    reader.readAsDataURL(file);
+  });
 }
 
 </script>
@@ -181,23 +287,6 @@ function clearPreview(): void {
     <button
       type="button"
       class="settings-toggle"
-      :aria-expanded="settingsOpen"
-      @click="settingsOpen = !settingsOpen"
-    >
-      <Settings2 :size="17" />
-      <span>模型服务</span>
-      <small>由后台统一配置</small>
-      <ChevronDown :size="18" :class="{ rotated: settingsOpen }" />
-    </button>
-
-    <p v-if="settingsOpen" class="model-note">
-      <ShieldCheck :size="16" />
-      <span>模型、接口地址和 API Key 已迁移到后台配置，浏览器不会再保存真实密钥。</span>
-    </p>
-
-    <button
-      type="button"
-      class="settings-toggle"
       :aria-expanded="profileOpen"
       @click="profileOpen = !profileOpen"
     >
@@ -207,31 +296,7 @@ function clearPreview(): void {
       <ChevronDown :size="18" :class="{ rotated: profileOpen }" />
     </button>
 
-    <div v-if="profileOpen" class="profile-panel" aria-label="个人背景">
-      <label class="field">
-        <span>称呼</span>
-        <input v-model="userProfile.nickname" type="text" placeholder="怎么称呼你" />
-      </label>
-
-      <label class="field">
-        <span>职业 / 行业</span>
-        <input v-model="userProfile.occupation" type="text" placeholder="例如：互联网产品经理" />
-      </label>
-
-      <label class="field">
-        <span>当前最关注</span>
-        <select v-model="userProfile.currentFocus">
-          <option v-for="opt in CURRENT_FOCUS_OPTIONS" :key="opt.value" :value="opt.value">
-            {{ opt.label }}
-          </option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span>补充说明</span>
-        <textarea v-model="userProfile.customNote" rows="2" placeholder="其他想让AI知道的背景信息" />
-      </label>
-    </div>
+    <UserProfileFields v-if="profileOpen" v-model="profileProxy" />
 
     <div class="consultation-layout">
       <nav class="scene-tabs" aria-label="咨询场景">
@@ -265,7 +330,7 @@ function clearPreview(): void {
         <div v-if="activeScene.acceptsScreenshot" class="screenshot-tool">
           <label class="upload-drop">
             <UploadCloud :size="21" />
-            <span>{{ imageName || '上传截图本地预览' }}</span>
+            <span>{{ imageName || '上传命盘截图给模型解读' }}</span>
             <input type="file" accept="image/*" @change="handleImageUpload" />
           </label>
 
@@ -281,7 +346,7 @@ function clearPreview(): void {
             <textarea
               v-model="screenshotText"
               rows="4"
-              placeholder="粘贴四柱、大运、流年、五行强弱等文字。图片当前仅本地预览，发送给模型的是这里的文字。"
+              placeholder="可选：补充截图里特别想看的文字，例如四柱、大运、流年、五行强弱等。"
             />
           </label>
         </div>
@@ -309,8 +374,15 @@ function clearPreview(): void {
         <p v-if="error" class="share-error">{{ error }}</p>
 
         <div v-if="answer" class="consultation-answer">
-          <p class="eyebrow">AI RESPONSE</p>
-          <div>{{ answer }}</div>
+          <div class="answer-report-head">
+            <FileText :size="18" />
+            <div>
+              <p class="eyebrow">AI INSIGHT REPORT</p>
+              <span>{{ activeScene.title }}</span>
+            </div>
+            <small>{{ answerTime }}</small>
+          </div>
+          <div class="answer-report-body" v-html="renderedAnswer"></div>
         </div>
 
         <div v-else class="consultation-empty">

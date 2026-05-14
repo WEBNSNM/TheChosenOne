@@ -1,8 +1,15 @@
 export type DeepSeekModel = 'deepseek-v4-flash' | 'deepseek-v4-pro';
 
+export type DeepSeekMessageContent =
+  | string
+  | Array<
+    | { type: 'text'; text: string }
+    | { type: 'image_url'; image_url: { url: string } }
+  >;
+
 export interface DeepSeekMessage {
   role: 'system' | 'user' | 'assistant';
-  content: string;
+  content: DeepSeekMessageContent;
 }
 
 export interface DeepSeekModelOption {
@@ -49,7 +56,7 @@ export function createDeepSeekPayload(messages: DeepSeekMessage[], model: DeepSe
     model,
     messages,
     temperature: 0.7,
-    max_tokens: 1200,
+    max_tokens: 4096,
     thinking: {
       type: 'disabled',
     },

@@ -29,6 +29,12 @@ export interface AiConfigInput {
   baseUrl: string;
   model: string;
   apiKey?: string;
+  vision?: {
+    provider: string;
+    baseUrl: string;
+    model: string;
+    apiKey?: string;
+  };
 }
 
 export interface AiConfigView {
@@ -37,6 +43,13 @@ export interface AiConfigView {
   model?: string;
   hasApiKey: boolean;
   updatedAt?: string;
+  vision: {
+    provider: string;
+    baseUrl?: string;
+    model?: string;
+    hasApiKey: boolean;
+    updatedAt?: string;
+  };
 }
 
 export interface ChartSubmission {

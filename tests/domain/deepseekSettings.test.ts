@@ -3,8 +3,10 @@ import {
   DEEPSEEK_SETTINGS_KEY,
   clearDeepSeekSettings,
   loadDeepSeekSettings,
+  loadUserProfile,
   saveDeepSeekSettings,
 } from '../../src/domain/deepseekSettings';
+import { isUserProfileFilled } from '../../src/domain/consultation';
 
 class MemoryStorage implements Storage {
   private values = new Map<string, string>();
@@ -60,5 +62,20 @@ describe('deepseek settings storage', () => {
     clearDeepSeekSettings(storage);
 
     expect(loadDeepSeekSettings(storage).apiKey).toBe('');
+  });
+
+  it('keeps legacy user profile focus data compatible but non-required', () => {
+    const storage = new MemoryStorage();
+    storage.setItem('the-chosen-one:user-profile', JSON.stringify({
+      nickname: '',
+      occupation: '',
+      currentFocus: 'career',
+      customNote: '',
+    }));
+
+    const profile = loadUserProfile(storage);
+
+    expect(profile.currentFocus).toBe('career');
+    expect(isUserProfileFilled(profile)).toBe(false);
   });
 });

@@ -2,10 +2,17 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { CalendarDays, Maximize2, Sparkles, TicketCheck, X } from 'lucide-vue-next';
 import AdminApp from './components/AdminApp.vue';
+import ChartSetupModal from './components/ChartSetupModal.vue';
 import ConsultationPage from './components/ConsultationPage.vue';
 import LeadPage from './components/LeadPage.vue';
 import { getClientId, submitChart } from './domain/backendClient';
-import { isChartComplete, getChartMissingHint } from './domain/consultation';
+import {
+  isChartComplete,
+  getChartMissingHint,
+  isUserProfileFilled,
+  type UserProfile,
+} from './domain/consultation';
+import { loadUserProfile, saveUserProfile } from './domain/deepseekSettings';
 import { loadSavedForm, saveForm } from './domain/formStorage';
 import { generateLuckyLottery, type LotteryInput, type LuckyLotteryResult } from './domain/lottery';
 
@@ -27,10 +34,14 @@ const defaultForm: LotteryInput = {
 };
 
 const form = ref<LotteryInput>(loadSavedForm(defaultForm));
+const userProfile = ref<UserProfile>(loadUserProfile());
 const result = ref<LuckyLotteryResult | null>(tryGenerate(form.value));
 const error = ref('');
 const currentPage = ref<AppPage>(getPageFromHash());
 const isHeroDetailOpen = ref(false);
+const isSetupModalOpen = ref(false);
+const setupModalIncludesProfile = ref(false);
+const setupModalRequiresProfile = ref(false);
 
 const transitLine = computed(() => {
   return result.value?.profile.transit.pillars.map((pillar) => pillar.label).join(' · ') ?? '';
@@ -59,6 +70,14 @@ watch(
   { deep: true },
 );
 
+watch(
+  userProfile,
+  (value) => {
+    saveUserProfile(value);
+  },
+  { deep: true },
+);
+
 onMounted(() => {
   window.addEventListener('hashchange', syncPageFromHash);
 });
@@ -67,24 +86,48 @@ onBeforeUnmount(() => {
   window.removeEventListener('hashchange', syncPageFromHash);
 });
 
-const shouldOpenChart = ref(false);
-
 function generate(): void {
   if (!isChartComplete(form.value)) {
     error.value = getChartMissingHint(form.value) + '，才能生成灵感。';
-    shouldOpenChart.value = true;
+    openChartSetup();
     return;
   }
-  shouldOpenChart.value = false;
 
   try {
     const generated = generateLuckyLottery(form.value);
     result.value = generated;
     error.value = '';
+    closeChartSetup();
     void persistChart(generated);
   } catch (caught) {
     error.value = caught instanceof Error ? caught.message : '生成失败，请检查输入';
   }
+}
+
+function submitSetupModal(): void {
+  if (setupModalRequiresProfile.value && !isUserProfileFilled(userProfile.value)) {
+    error.value = '请先补充个人背景，再开始深度解读。';
+    return;
+  }
+
+  generate();
+}
+
+function openChartSetup(options: { includeProfile?: boolean; profileRequired?: boolean } = {}): void {
+  setupModalIncludesProfile.value = Boolean(options.includeProfile);
+  setupModalRequiresProfile.value = Boolean(options.profileRequired);
+  isSetupModalOpen.value = true;
+}
+
+function closeChartSetup(): void {
+  isSetupModalOpen.value = false;
+  setupModalIncludesProfile.value = false;
+  setupModalRequiresProfile.value = false;
+}
+
+function openConsultationFromSetup(): void {
+  closeChartSetup();
+  setPage('consultation');
 }
 
 async function persistChart(generated: LuckyLotteryResult): Promise<void> {
@@ -311,11 +354,26 @@ function formatDate(date: Date): string {
       v-model="form"
       :result="result"
       :error="error"
-      :prompt-chart="shouldOpenChart"
       @submit="generate"
+      @open-chart="openChartSetup"
       @open-consultation="setPage('consultation')"
     />
-    <ConsultationPage v-else :result="result" :form="form" />
+    <ConsultationPage
+      v-else
+      :result="result"
+      :form="form"
+      v-model:user-profile="userProfile"
+      @request-setup="openChartSetup"
+    />
+
+    <ChartSetupModal
+      v-if="isSetupModalOpen"
+      v-model="form"
+      v-model:user-profile="userProfile"
+      :profile-required="setupModalRequiresProfile"
+      @close="closeChartSetup"
+      @submit="submitSetupModal"
+    />
 
     <footer class="footer-note">
       <TicketCheck :size="16" />

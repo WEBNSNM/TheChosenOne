@@ -17,11 +17,25 @@ describe('deepseek client', () => {
       model: 'deepseek-v4-flash',
       messages,
       temperature: 0.7,
-      max_tokens: 1200,
+      max_tokens: 4096,
       thinking: {
         type: 'disabled',
       },
     });
+  });
+
+  it('keeps OpenAI-compatible image message content in the payload', () => {
+    const multimodalMessages: DeepSeekMessage[] = [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: '请看这张命盘截图。' },
+          { type: 'image_url', image_url: { url: 'data:image/png;base64,abc' } },
+        ],
+      },
+    ];
+
+    expect(createDeepSeekPayload(multimodalMessages, 'deepseek-v4-flash').messages).toEqual(multimodalMessages);
   });
 
   it('sends the request with bearer auth and returns the assistant content', async () => {
