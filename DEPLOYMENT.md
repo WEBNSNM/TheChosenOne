@@ -328,3 +328,61 @@ https://xxymj.indevs.in
 - 前端设置 `VITE_API_BASE_URL` 指向 Worker 域名；或
 - 在 Cloudflare 路由里把 `https://xxymj.indevs.in/api/*` 指向 Worker。
 
+## 商业体验码发布清单
+
+商业模式由 Worker 的 `COMMERCIAL_MODE` 控制。生产环境保持 `COMMERCIAL_MODE=true`（未设置时也按商业模式处理）；只有明确的私有/测试环境才设置为 `false`。发布前在 Cloudflare Dashboard 的 Worker Variables 中确认该值，并将 `JWT_SECRET`、`CONFIG_ENCRYPTION_KEY` 替换为生产 Secret。
+
+### Migration 顺序与回滚边界
+
+体验码功能依赖以下 D1 migration，必须按 Wrangler 的版本顺序执行：
+
+- `0004_access_codes.sql`：体验码、浏览器会话和使用记录表；
+- `0005_access_quota_triggers.sql`：配额占用、释放的原子触发器；
+- `0006_access_usage_replays.sql`：幂等重放所需的响应字段。
+
+部署前先备份/确认目标数据库，再执行：
+
+```bash
+npx wrangler d1 migrations list the-chosen-one --remote
+npx wrangler d1 migrations apply the-chosen-one --remote
+npm run build
+npx wrangler deploy
+```
+
+Migration 失败时不要重复执行半条 SQL 或删除表。保留当前 Worker 版本，修复数据库权限/连接后重新运行 `migrations apply`；Wrangler 会跳过已完成版本。若新 Worker 已发布但 migration 尚未完成，立即将发布回滚到上一版本，并暂时关闭销售入口，避免用户兑换体验码。
+
+### Cookie、会话与配额
+
+- 兑换成功后 Worker 设置 `tco_access_session` Cookie：`HttpOnly`、`Secure`、`SameSite=Lax`、`Path=/`；会话有效期为兑换日起 7 天。
+- 一个体验码只允许一个未撤销的浏览器会话。用户更换浏览器时会收到冲突提示；管理员执行“重置浏览器绑定”后才可再次兑换。
+- 体验码默认配额为 10 次。请求先以 `reserved` 原子占用名额，报告成功才变为 `consumed`；模型失败、超时或输出安全检查失败会 `released`，不会扣次。相同幂等键会重放已保存响应。
+- 体验码状态包括 `available`、`active`、`exhausted`、`expired`、`disabled`。过期时间从首次兑换开始计算，不从批量生成或标记发放开始计算。
+
+### 管理员操作与人工兜底
+
+管理员入口需要现有后台管理员 JWT；只授予可信的 `admin` 角色。API 操作对应：
+
+```text
+POST  /api/admin/access-codes/batches       批量生成体验码（10/批等）
+GET   /api/admin/access-codes                列表及 status 过滤
+PATCH /api/admin/access-codes/:id            issue / disable / resetBinding / addQuota
+POST  /api/access/redeem                     用户兑换并建立会话
+GET   /api/access/me                         查询当前会话、状态和剩余次数
+POST  /api/access/logout                     撤销当前浏览器会话
+```
+
+如果后台页面暂时不可用，管理员可使用同源 API（带 `Authorization: Bearer <admin-jwt>`）完成发码、标记订单、禁用、重置绑定和增加配额；不要在工单、日志或聊天中粘贴完整体验码。仅向用户提供码的末四位和通用支持说明。若兑换接口异常，先检查 Worker 日志、D1 migration 状态和 `COMMERCIAL_MODE`，不要手工改 `used_count` 或绕过会话校验。
+
+### 浏览器上线冒烟检查
+
+在桌面宽度（约 1440px）和移动宽度（约 390px）各执行一次：
+
+1. 未登录打开首页，只显示商业授权门和兑换输入，不应出现抽奖、截图解析或私人测试入口。
+2. 输入无效码，确认显示通用错误且不泄露码是否存在；输入有效码后确认显示 `active`、7 天到期日和剩余次数。
+3. 刷新页面，确认 `tco_access_session` 自动恢复；点击退出后确认页面回到授权门。
+4. 提交一份成长档案并生成报告，确认成功扣 1 次；模型失败/超时后确认次数恢复，重复提交相同幂等键不会重复扣次。
+5. 将码置为耗尽、过期、禁用，确认页面分别显示终止状态和支持提示，且生成接口被拒绝。
+6. 以管理员登录体验码管理页，确认批量生成、复制/标记发放、订单备注、筛选、禁用、重置绑定和增加配额均能刷新列表；普通 viewer 账号必须收到 403。
+
+发布后再用真实域名重复第 1–4 项，并确认浏览器开发者工具中 Cookie 未暴露给脚本、`/api/*` 未被静态 SPA fallback 接管。
+

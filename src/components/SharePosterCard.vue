@@ -112,7 +112,7 @@ function handleKeydown(event: KeyboardEvent): void {
     </div>
 
     <p class="share-copy">
-      选择一种版面，先预览再下载，把今日吉凶、适合事项、命盘五行和红蓝灵感生成一张分享图。
+      选择一种版面，先预览再下载，把今日状态参考、建议尝试事项、成长档案元素和个人灵感生成一张分享图。
     </p>
 
     <div class="poster-template-grid" role="group" aria-label="分享图版面">

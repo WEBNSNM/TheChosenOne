@@ -10,6 +10,7 @@ import type { LotteryInput } from '../domain/lottery';
 const props = withDefaults(defineProps<{
   form: LotteryInput;
   showAction?: boolean;
+  commercialMode?: boolean;
 }>(), {
   showAction: true,
 });
@@ -27,17 +28,17 @@ const sections = getPremiumReportSections();
     <div class="premium-preview-head">
       <div>
         <p class="eyebrow">PAID REPORT</p>
-        <h2>深度命盘报告</h2>
+        <h2>个人成长洞察报告</h2>
       </div>
       <Crown :size="23" />
     </div>
 
-    <p class="premium-readiness" :class="{ ready: readiness.isReady }">
+    <p class="premium-readiness" :class="{ ready: props.commercialMode || readiness.isReady }">
       <Sparkles :size="17" />
-      <span>{{ readiness.message }}</span>
+      <span>{{ props.commercialMode ? '职业、关注重点、目标和当前困难是主要依据；文化背景信息为选填。' : readiness.message }}</span>
     </p>
 
-    <div class="report-section-list" aria-label="深度报告目录">
+    <div class="report-section-list" aria-label="个人成长洞察报告目录">
       <article v-for="section in sections" :key="section.title" class="report-section-item">
         <div class="report-section-icon">
           <FileText :size="18" />
@@ -60,7 +61,7 @@ const sections = getPremiumReportSections();
       @click="emit('openConsultation')"
     >
       <Crown :size="18" />
-      <span>进入深度解读</span>
+      <span>生成个人成长洞察</span>
       <ChevronRight :size="18" />
     </button>
   </section>

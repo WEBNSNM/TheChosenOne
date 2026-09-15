@@ -2,19 +2,23 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { CalendarDays, Maximize2, Sparkles, TicketCheck, X } from 'lucide-vue-next';
 import AdminApp from './components/AdminApp.vue';
+import AccessGate from './components/AccessGate.vue';
 import ChartSetupModal from './components/ChartSetupModal.vue';
 import ConsultationPage from './components/ConsultationPage.vue';
+import EntitlementStatus from './components/EntitlementStatus.vue';
 import LeadPage from './components/LeadPage.vue';
-import { getClientId, submitChart } from './domain/backendClient';
+import { BackendClientError, getAccessConfig, getAccessMe, getClientId, logoutAccess, submitChart, type AccessConfig, type AccessEntitlement } from './domain/backendClient';
 import {
   isChartComplete,
   getChartMissingHint,
+  isGrowthProfileComplete,
   isUserProfileFilled,
   type UserProfile,
 } from './domain/consultation';
 import { loadUserProfile, saveUserProfile } from './domain/deepseekSettings';
 import { loadSavedForm, saveForm } from './domain/formStorage';
 import { generateLuckyLottery, type LotteryInput, type LuckyLotteryResult } from './domain/lottery';
+import { isCommercialMode } from './domain/runtimeConfig';
 
 type AppPage = 'numbers' | 'consultation' | 'admin';
 
@@ -38,15 +42,41 @@ const userProfile = ref<UserProfile>(loadUserProfile());
 const result = ref<LuckyLotteryResult | null>(tryGenerate(form.value));
 const error = ref('');
 const currentPage = ref<AppPage>(getPageFromHash());
+const commercialMode = isCommercialMode();
 const isHeroDetailOpen = ref(false);
 const isSetupModalOpen = ref(false);
 const setupModalIncludesProfile = ref(false);
 const setupModalRequiresProfile = ref(false);
+const entitlement = ref<AccessEntitlement | null>(null);
+const accessConfig = ref<AccessConfig>({ maxUses: 10, validDays: 7 });
+const logoutError = ref('');
+const entitlementError = ref('');
+const isEntitlementLoading = ref(commercialMode && currentPage.value !== 'admin');
+let entitlementRequestGeneration = 0;
+let isLoggingOut = false;
+const workspaceLocked = computed(() => {
+  const status = entitlement.value?.status;
+  return status === 'expired' || status === 'exhausted' || status === 'disabled' || entitlement.value?.remainingUses === 0;
+});
 
 const transitLine = computed(() => {
   return result.value?.profile.transit.pillars.map((pillar) => pillar.label).join(' · ') ?? '';
 });
 const heroCopy = computed(() => {
+  if (commercialMode) {
+    return currentPage.value === 'consultation'
+      ? {
+          kicker: 'AI GROWTH INSIGHT',
+          title: '个人成长洞察报告',
+          lead: '从你的职业、关注重点、目标和当前困难出发，整理能力倾向、阶段观察与行动建议。',
+        }
+      : {
+          kicker: 'PERSONAL GROWTH PROFILE',
+          title: '理清当下，再决定下一步',
+          lead: '传统历法文化 × AI 的个人成长洞察工具。现实背景是主要依据，文化信息仅作可选参考。',
+        };
+  }
+
   if (currentPage.value === 'consultation') {
     return {
       kicker: 'AI DAILY READING',
@@ -80,13 +110,22 @@ watch(
 
 onMounted(() => {
   window.addEventListener('hashchange', syncPageFromHash);
+  window.addEventListener('focus', refreshEntitlement);
+  document.addEventListener('visibilitychange', refreshEntitlementWhenVisible);
+  if (commercialMode) {
+    void getAccessConfig().then((config) => { accessConfig.value = config; }).catch(() => undefined);
+    if (currentPage.value !== 'admin') void restoreEntitlement();
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('hashchange', syncPageFromHash);
+  window.removeEventListener('focus', refreshEntitlement);
+  document.removeEventListener('visibilitychange', refreshEntitlementWhenVisible);
 });
 
 function generate(): void {
+  if (workspaceLocked.value) return;
   if (!isChartComplete(form.value)) {
     error.value = getChartMissingHint(form.value) + '，才能生成灵感。';
     openChartSetup();
@@ -105,8 +144,15 @@ function generate(): void {
 }
 
 function submitSetupModal(): void {
-  if (setupModalRequiresProfile.value && !isUserProfileFilled(userProfile.value)) {
+  if (setupModalRequiresProfile.value && !(commercialMode ? isGrowthProfileComplete(userProfile.value) : isUserProfileFilled(userProfile.value))) {
     error.value = '请先补充个人背景，再开始深度解读。';
+    return;
+  }
+
+  if (commercialMode) {
+    result.value = tryGenerate(form.value);
+    error.value = '';
+    closeChartSetup();
     return;
   }
 
@@ -149,6 +195,7 @@ function tryGenerate(input: LotteryInput): LuckyLotteryResult | null {
 }
 
 function setPage(page: AppPage): void {
+  if (workspaceLocked.value && page !== currentPage.value) return;
   currentPage.value = page;
   isHeroDetailOpen.value = false;
 
@@ -162,6 +209,73 @@ function setPage(page: AppPage): void {
 function syncPageFromHash(): void {
   currentPage.value = getPageFromHash();
   isHeroDetailOpen.value = false;
+  if (commercialMode && currentPage.value !== 'admin' && !entitlement.value) void restoreEntitlement();
+}
+
+async function restoreEntitlement(): Promise<void> {
+  if (!commercialMode) {
+    isEntitlementLoading.value = false;
+    return;
+  }
+  if (currentPage.value === 'admin') {
+    isEntitlementLoading.value = false;
+    return;
+  }
+  const requestGeneration = ++entitlementRequestGeneration;
+  const wasEntitled = Boolean(entitlement.value);
+  isEntitlementLoading.value = !wasEntitled;
+  try {
+    const access = await getAccessMe();
+    if (requestGeneration !== entitlementRequestGeneration || isLoggingOut) return;
+    entitlement.value = access;
+    entitlementError.value = '';
+  } catch (caught) {
+    if (requestGeneration !== entitlementRequestGeneration || isLoggingOut) return;
+    if (caught instanceof BackendClientError && caught.status === 401) {
+      entitlement.value = null;
+      entitlementError.value = '';
+    } else {
+      entitlementError.value = caught instanceof Error ? caught.message : '暂时无法刷新访问权益，请稍后重试。';
+    }
+  } finally {
+    if (requestGeneration === entitlementRequestGeneration && !isLoggingOut) {
+      isEntitlementLoading.value = false;
+    }
+  }
+}
+
+function refreshEntitlement(): void {
+  if (commercialMode && currentPage.value !== 'admin' && entitlement.value) void restoreEntitlement();
+}
+
+function refreshEntitlementWhenVisible(): void {
+  if (document.visibilityState === 'visible') refreshEntitlement();
+}
+
+async function handleRedeemed(access: AccessEntitlement): Promise<void> {
+  entitlement.value = access;
+  entitlementError.value = '';
+  await restoreEntitlement();
+}
+
+async function handleLogout(): Promise<void> {
+  logoutError.value = '';
+  isLoggingOut = true;
+  entitlementRequestGeneration += 1;
+  try {
+    await logoutAccess();
+    entitlement.value = null;
+    entitlementError.value = '';
+    currentPage.value = 'numbers';
+    if (typeof window !== 'undefined' && window.location.hash !== '#numbers') {
+      window.location.hash = '#numbers';
+    }
+    isEntitlementLoading.value = false;
+  } catch (caught) {
+    logoutError.value = caught instanceof Error ? caught.message : '退出登录失败，请重试。';
+  } finally {
+    isLoggingOut = false;
+  }
 }
 
 function getPageFromHash(): AppPage {
@@ -181,32 +295,38 @@ function formatDate(date: Date): string {
 
 <template>
   <AdminApp v-if="currentPage === 'admin'" />
-  <div v-else class="app-shell">
+  <div v-else-if="isEntitlementLoading" class="access-loading" role="status" aria-live="polite">
+    正在检查访问权限…
+  </div>
+  <AccessGate v-else-if="commercialMode && !entitlement" :status-message="entitlementError" :max-uses="accessConfig.maxUses" :valid-days="accessConfig.validDays" @redeemed="handleRedeemed" />
+  <div v-else class="app-shell" :class="{ 'workspace-locked': workspaceLocked }">
     <header class="hero" :class="{ 'consultation-hero': currentPage === 'consultation' }">
       <nav class="topbar" aria-label="应用信息">
         <div class="brand-mark">
           <Sparkles :size="19" />
-          <span>The Chosen One</span>
+          <span>{{ commercialMode ? '个人成长洞察工具' : 'The Chosen One' }}</span>
         </div>
         <div class="topbar-actions">
           <div class="page-tabs" aria-label="页面切换">
             <button
               type="button"
               class="page-tab"
+              :disabled="workspaceLocked"
               :class="{ active: currentPage === 'numbers' }"
               :aria-current="currentPage === 'numbers' ? 'page' : undefined"
               @click="setPage('numbers')"
             >
-              灵感入口
+              {{ commercialMode ? '成长档案' : '灵感入口' }}
             </button>
             <button
               type="button"
               class="page-tab"
+              :disabled="workspaceLocked"
               :class="{ active: currentPage === 'consultation' }"
               :aria-current="currentPage === 'consultation' ? 'page' : undefined"
               @click="setPage('consultation')"
             >
-              深度咨询
+              {{ commercialMode ? '成长报告' : '深度咨询' }}
             </button>
           </div>
           <div class="date-pill">
@@ -214,13 +334,15 @@ function formatDate(date: Date): string {
             <span>{{ form.targetDate }}</span>
           </div>
         </div>
+        <EntitlementStatus v-if="commercialMode && entitlement" :entitlement="entitlement" @logout="handleLogout" />
       </nav>
+      <p v-if="logoutError || entitlementError" class="logout-error" role="alert">{{ logoutError || entitlementError }}</p>
 
       <section class="hero-copy">
         <p class="kicker">{{ heroCopy.kicker }}</p>
         <h1>{{ heroCopy.title }}</h1>
         <p class="hero-lead">{{ heroCopy.lead }}</p>
-        <div v-if="currentPage === 'consultation' && result" class="hero-consultation-panel" aria-label="深度流日咨询摘要">
+        <div v-if="!commercialMode && currentPage === 'consultation' && result" class="hero-consultation-panel" aria-label="深度流日咨询摘要">
           <button
             type="button"
             class="hero-detail-toggle"
@@ -242,7 +364,7 @@ function formatDate(date: Date): string {
           </div>
         </div>
 
-        <div v-else-if="result" class="hero-metrics" aria-label="今日流日">
+        <div v-else-if="!commercialMode && result" class="hero-metrics" aria-label="今日流日">
           <span>
             <strong>{{ result.profile.transit.day.label }}</strong>
             流日
@@ -349,6 +471,7 @@ function formatDate(date: Date): string {
       v-model="form"
       :result="result"
       :error="error"
+      :commercial-mode="commercialMode"
       @submit="generate"
       @open-chart="openChartSetup"
       @open-consultation="setPage('consultation')"
@@ -358,7 +481,10 @@ function formatDate(date: Date): string {
       :result="result"
       :form="form"
       v-model:user-profile="userProfile"
+      :locked="workspaceLocked"
+      :commercial-mode="commercialMode"
       @request-setup="openChartSetup"
+      @report-generated="refreshEntitlement"
     />
 
     <ChartSetupModal
@@ -366,13 +492,19 @@ function formatDate(date: Date): string {
       v-model="form"
       v-model:user-profile="userProfile"
       :profile-required="setupModalRequiresProfile"
+      :commercial-mode="commercialMode"
       @close="closeChartSetup"
       @submit="submitSetupModal"
     />
 
     <footer class="footer-note">
       <TicketCheck :size="16" />
-      <span>仅供娱乐与灵感参考，数字结果请理性看待。</span>
+      <span>{{ commercialMode
+        ? '用于个人成长反思与行动规划；传统历法信息仅作文化参考，不构成确定性预测，也不替代医疗、法律或投资等专业建议。'
+        : '仅供娱乐与灵感参考，数字结果请理性看待。' }}</span>
     </footer>
+    <div v-if="workspaceLocked" class="workspace-lock-banner" role="alert">
+      当前权益无法继续生成或切换内容，请查看上方状态或联系支持。
+    </div>
   </div>
 </template>

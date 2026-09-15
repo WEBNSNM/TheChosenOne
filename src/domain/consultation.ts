@@ -23,6 +23,9 @@ export interface ConsultationScene {
 export interface UserProfile {
   nickname: string;
   occupation: string;
+  focus: string;
+  goal: string;
+  currentDifficulty: string;
   customNote: string;
   currentFocus?: '' | 'career' | 'relationship' | 'health' | 'finance' | 'study';
 }
@@ -30,8 +33,31 @@ export interface UserProfile {
 export const EMPTY_USER_PROFILE: UserProfile = {
   nickname: '',
   occupation: '',
+  focus: '',
+  goal: '',
+  currentDifficulty: '',
   customNote: '',
 };
+
+export interface GrowthReportInput {
+  profile: {
+    occupation: string;
+    focus: string;
+    goal: string;
+    currentDifficulty: string;
+    additionalContext?: string;
+  };
+  calendarContext?: {
+    label: '传统历法文化背景信息';
+    birthDate?: string;
+    birthTime?: string;
+    calendarType?: LotteryInput['birthCalendar'];
+    birthPillars?: string[];
+    dayMaster?: string;
+    elementCounts?: Partial<Record<ElementName, number>>;
+    currentCycle?: string;
+  };
+}
 
 export const PROFILE_REQUIRED_SCENE_IDS = new Set<ConsultationSceneId>([
   'premium-chart-report',
@@ -47,6 +73,23 @@ export function isUserProfileFilled(profile: UserProfile): boolean {
       || profile.occupation.trim()
       || profile.customNote.trim(),
   );
+}
+
+const growthProfileFields = [
+  ['occupation', '职业'],
+  ['focus', '关注重点'],
+  ['goal', '目标'],
+  ['currentDifficulty', '当前困难'],
+] as const;
+
+export function getMissingGrowthProfileFields(profile: UserProfile): string[] {
+  return growthProfileFields
+    .filter(([key]) => !profile[key]?.trim())
+    .map(([, label]) => label);
+}
+
+export function isGrowthProfileComplete(profile: UserProfile): boolean {
+  return getMissingGrowthProfileFields(profile).length === 0;
 }
 
 export interface BuildConsultationMessagesOptions {
@@ -83,6 +126,58 @@ export const consultationScenes: ConsultationScene[] = [
     acceptsScreenshot: true,
   },
 ];
+
+const commercialGrowthReportScene: ConsultationScene = {
+  id: 'premium-chart-report',
+  title: '个人成长洞察报告',
+  shortTitle: '成长洞察',
+  subtitle: '以你主动填写的职业、关注重点、目标和当前困难为主要依据，整理可验证的观察与行动方案。',
+  badge: 'AI 报告',
+  inputLabel: '补充说明',
+  placeholder: '可选：补充你希望报告特别考虑的现实条件。',
+  starter: '请结合我的现实背景，整理个人成长洞察与未来 30 天行动建议。',
+  deliverables: ['能力倾向', '阶段观察', '事业行动建议', '金钱行动建议', '风险与不确定性提示'],
+};
+
+export function getAvailableConsultationScenes(commercialMode: boolean): ConsultationScene[] {
+  return commercialMode ? [commercialGrowthReportScene] : consultationScenes;
+}
+
+export function buildGrowthReportInput({
+  result,
+  form,
+  userProfile,
+}: {
+  result?: LuckyLotteryResult | null;
+  form: LotteryInput;
+  userProfile: UserProfile;
+}): GrowthReportInput {
+  const additionalContext = userProfile.customNote?.trim() ?? '';
+  const calendarContext: GrowthReportInput['calendarContext'] = {
+    label: '传统历法文化背景信息',
+  };
+
+  if (form.birthDate) calendarContext.birthDate = form.birthDate;
+  if (form.birthTime) calendarContext.birthTime = form.birthTime;
+  if (form.birthDate || form.birthTime) calendarContext.calendarType = form.birthCalendar;
+  if (result) {
+    calendarContext.birthPillars = result.profile.birth.pillars.map((pillar) => pillar.label);
+    calendarContext.dayMaster = `${result.profile.dayMaster.stem}${result.profile.dayMaster.element}`;
+    calendarContext.elementCounts = result.profile.birth.elementCounts;
+    if (result.profile.daYun?.currentGanZhi) calendarContext.currentCycle = result.profile.daYun.currentGanZhi;
+  }
+
+  return {
+    profile: {
+      occupation: userProfile.occupation?.trim() ?? '',
+      focus: userProfile.focus?.trim() ?? '',
+      goal: userProfile.goal?.trim() ?? '',
+      currentDifficulty: userProfile.currentDifficulty?.trim() ?? '',
+      ...(additionalContext ? { additionalContext } : {}),
+    },
+    ...(Object.keys(calendarContext).length > 1 ? { calendarContext } : {}),
+  };
+}
 
 // ─── 每个场景的专属系统提示词 ───
 

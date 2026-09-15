@@ -10,6 +10,7 @@ const props = defineProps<{
   modelValue: LotteryInput;
   userProfile: UserProfile;
   profileRequired?: boolean;
+  commercialMode?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -32,12 +33,12 @@ const profileProxy = computed({
 
 <template>
   <Teleport to="body">
-    <div class="chart-modal" role="dialog" aria-modal="true" aria-label="输入命盘" @click.self="emit('close')">
+    <div class="chart-modal" role="dialog" aria-modal="true" :aria-label="props.commercialMode ? '编辑成长档案' : '输入命盘'" @click.self="emit('close')">
       <div class="chart-modal-shell">
         <div class="chart-modal-head">
           <div>
-            <p class="eyebrow">PERSONAL CHART</p>
-            <h2>输入命盘</h2>
+            <p class="eyebrow">{{ props.commercialMode ? 'GROWTH PROFILE' : 'PERSONAL CHART' }}</p>
+            <h2>{{ props.commercialMode ? '编辑成长档案' : '输入命盘' }}</h2>
           </div>
           <button type="button" class="chart-modal-close" aria-label="关闭输入命盘" @click="emit('close')">
             <X :size="18" />
@@ -50,7 +51,8 @@ const profileProxy = computed({
             <span>这个深度场景需要先补充个人背景，命盘和背景会一起用于生成解读。</span>
           </p>
 
-          <FortuneForm v-model="formProxy" @submit="emit('submit')">
+          <p v-if="props.commercialMode" class="inline-notice">出生日期与时间仅作为选填的传统历法文化背景信息。为保护隐私，请只填写生成报告确有帮助的内容。</p>
+          <FortuneForm v-model="formProxy" :commercial-mode="props.commercialMode" @submit="emit('submit')">
             <template #before-submit>
               <UserProfileFields v-model="profileProxy" class="chart-profile-panel" />
             </template>

@@ -73,6 +73,9 @@ export function loadUserProfile(storage = getBrowserStorage()): UserProfile {
     return {
       nickname: typeof parsed.nickname === 'string' ? parsed.nickname : '',
       occupation: typeof parsed.occupation === 'string' ? parsed.occupation : '',
+      focus: typeof parsed.focus === 'string' ? parsed.focus : '',
+      goal: typeof parsed.goal === 'string' ? parsed.goal : '',
+      currentDifficulty: typeof parsed.currentDifficulty === 'string' ? parsed.currentDifficulty : '',
       customNote: typeof parsed.customNote === 'string' ? parsed.customNote : '',
       currentFocus: isCurrentFocus(parsed.currentFocus) ? parsed.currentFocus : undefined,
     };

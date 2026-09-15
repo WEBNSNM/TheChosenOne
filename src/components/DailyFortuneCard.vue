@@ -12,7 +12,7 @@ defineProps<{
     <div class="daily-head">
       <div>
         <p class="eyebrow">TODAY FORTUNE</p>
-        <h2>今日吉凶</h2>
+        <h2>今日状态参考</h2>
       </div>
       <div class="fortune-badge" :class="fortune.level">
         <strong>{{ fortune.label }}</strong>
@@ -27,7 +27,7 @@ defineProps<{
       <div class="daily-column">
         <div class="section-title">
           <CheckCircle2 :size="17" />
-          <span>适合</span>
+          <span>建议尝试</span>
         </div>
         <div class="tag-list good-tags">
           <span v-for="item in fortune.suitable" :key="item">{{ item }}</span>
@@ -37,7 +37,7 @@ defineProps<{
       <div class="daily-column">
         <div class="section-title">
           <AlertTriangle :size="17" />
-          <span>谨慎</span>
+          <span>建议谨慎</span>
         </div>
         <div class="tag-list caution-tags">
           <span v-for="item in fortune.avoid" :key="item">{{ item }}</span>

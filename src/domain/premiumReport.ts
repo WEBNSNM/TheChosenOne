@@ -22,6 +22,8 @@ export interface PremiumReportSection {
   items: string[];
 }
 
+export const GROWTH_REPORT_DISCLAIMER = '本报告用于个人成长反思与行动规划；传统历法文化背景信息仅作文化参考，不构成确定性预测，也不替代医疗、法律或投资等专业建议。';
+
 const genderLabels: Record<BirthGender, string> = {
   male: '男',
   female: '女',
@@ -84,36 +86,36 @@ export function getPremiumReadiness(form: LotteryInput): PremiumReadiness {
     missing,
     message: missing.length === 0
       ? '资料完整，可生成更细的深度报告。'
-      : `建议先补充${missing.join('、')}，深度报告会更稳。`,
+      : `可选补充${missing.join('、')}，帮助完善传统历法文化背景信息。`,
   };
 }
 
 export function getPremiumReportSections(): PremiumReportSection[] {
   return [
     {
-      title: '基础盘校准',
-      subtitle: '四柱、历法换算、真太阳时开关与时辰可靠度说明。',
-      items: ['四柱校对', '真太阳时提示', '时辰可靠度'],
+      title: '能力倾向',
+      subtitle: '结合职业与现实经历，梳理可能的优势、偏好和可验证线索。',
+      items: ['工作偏好', '协作方式', '能力线索'],
     },
     {
-      title: '命盘结构',
-      subtitle: '把日主、五行、十神和藏干整理成可阅读的结构分析。',
-      items: ['日主强弱', '十神关系', '藏干脉络'],
+      title: '阶段观察',
+      subtitle: '围绕当前关注、目标和困难，提出阶段性假设与情景规划。',
+      items: ['阶段主题', '关键变量', '30 天观察'],
     },
     {
-      title: '高级参考',
-      subtitle: '补充神煞、命宫身宫、空亡、纳音等进阶参考。',
-      items: ['神煞参考', '命宫身宫', '空亡纳音'],
+      title: '事业行动建议',
+      subtitle: '把洞察转成职业场景中的优先级、沟通和小步实验。',
+      items: ['本周重点', '沟通策略', '行动实验'],
     },
     {
-      title: '时间节奏',
-      subtitle: '围绕大运、流年、流月和今日流日形成阶段判断。',
-      items: ['大运提示', '流年主题', '流月流日'],
+      title: '金钱行动建议',
+      subtitle: '反思金钱决策习惯、资源配置和风险意识，不承诺财务结果。',
+      items: ['决策习惯', '资源配置', '风险意识'],
     },
     {
-      title: '行动建议',
-      subtitle: '把命盘语言转成事业、关系、财务节奏和当天行动重点。',
-      items: ['事业节奏', '关系沟通', '今日重点'],
+      title: '风险与不确定性提示',
+      subtitle: '标明信息边界、可变因素和需要专业支持的事项。',
+      items: ['不确定性', '验证方式', '专业支持'],
     },
   ];
 }

@@ -17,6 +17,7 @@ import type { LotteryInput, LotteryStrategy } from '../domain/lottery';
 
 const props = defineProps<{
   modelValue: LotteryInput;
+  commercialMode?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -179,13 +180,13 @@ function toggleLuckyNumber(value: number): void {
   <form class="fortune-form" @submit.prevent="emit('submit')">
     <div class="form-head">
       <div>
-        <p class="eyebrow">PERSONAL CHART</p>
-        <h2>输入命盘</h2>
+        <p class="eyebrow">{{ props.commercialMode ? 'CULTURAL CONTEXT' : 'PERSONAL CHART' }}</p>
+        <h2>{{ props.commercialMode ? '可选文化背景' : '输入命盘' }}</h2>
       </div>
       <WandSparkles :size="24" />
     </div>
 
-    <label class="field">
+    <label v-if="!props.commercialMode" class="field">
       <span>姓名 / 称呼</span>
       <input
         :value="modelValue.customerName"
@@ -197,11 +198,11 @@ function toggleLuckyNumber(value: number): void {
     </label>
 
     <label class="field">
-      <span>出生日期</span>
+      <span>出生日期{{ props.commercialMode ? '（选填）' : '' }}</span>
       <input
         :value="modelValue.birthDate"
         type="date"
-        required
+        :required="!props.commercialMode"
         @input="updateField('birthDate', $event)"
       />
     </label>
@@ -229,16 +230,16 @@ function toggleLuckyNumber(value: number): void {
     </div>
 
     <label class="field">
-      <span>出生时间</span>
+      <span>出生时间{{ props.commercialMode ? '（选填）' : '' }}</span>
       <input
         :value="modelValue.birthTime"
         type="time"
-        required
+        :required="!props.commercialMode"
         @input="updateField('birthTime', $event)"
       />
     </label>
 
-    <div class="profile-section">
+    <div v-if="!props.commercialMode" class="profile-section">
       <div class="field-caption">
         <span>
           <UserRound :size="16" />
@@ -261,7 +262,7 @@ function toggleLuckyNumber(value: number): void {
       </div>
     </div>
 
-    <div class="profile-section">
+    <div v-if="!props.commercialMode" class="profile-section">
       <div class="field-caption">
         <span>
           <Clock3 :size="16" />
@@ -284,7 +285,7 @@ function toggleLuckyNumber(value: number): void {
       </div>
     </div>
 
-    <div class="profile-section calibration-fields">
+    <div v-if="!props.commercialMode" class="profile-section calibration-fields">
       <label class="field">
         <span>
           <MapPin :size="16" />
@@ -314,7 +315,7 @@ function toggleLuckyNumber(value: number): void {
       <p class="field-hint">出生地可用于真太阳时校准，时辰交界附近更建议填写。</p>
     </div>
 
-    <label class="field">
+    <label v-if="!props.commercialMode" class="field">
       <span>流日日期</span>
       <input
         :value="modelValue.targetDate"
@@ -324,7 +325,7 @@ function toggleLuckyNumber(value: number): void {
       />
     </label>
 
-    <div class="strategy-group" role="group" aria-label="灵感策略">
+    <div v-if="!props.commercialMode" class="strategy-group" role="group" aria-label="灵感策略">
       <button
         v-for="option in strategies"
         :key="option.value"
@@ -338,7 +339,7 @@ function toggleLuckyNumber(value: number): void {
       </button>
     </div>
 
-    <div class="lucky-number-panel">
+    <div v-if="!props.commercialMode" class="lucky-number-panel">
       <div class="field-caption">
         <span>幸运数字</span>
         <small>可不选</small>
@@ -361,7 +362,7 @@ function toggleLuckyNumber(value: number): void {
 
     <button class="primary-action" type="submit">
       <WandSparkles :size="18" />
-      <span>保存命盘并生成</span>
+      <span>{{ props.commercialMode ? '保存成长档案' : '保存命盘并生成' }}</span>
     </button>
   </form>
 </template>

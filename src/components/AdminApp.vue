@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { LogOut, RefreshCw, Save, Search, ServerCog, ShieldCheck, Trash2, Users } from 'lucide-vue-next';
+import { LogOut, RefreshCw, Save, Search, ServerCog, ShieldCheck, Trash2, Users, KeyRound, Plus, RotateCcw, Ban } from 'lucide-vue-next';
 import {
   adminLogin,
   deleteAdminUser,
@@ -9,9 +9,17 @@ import {
   saveAiConfig,
   type AdminUserSummary,
   type AiConfigView,
+  type AccessCodeView,
+  createAdminAccessCodeBatch,
+  listAdminAccessCodes,
+  adjustAdminAccessCode,
+  deleteAdminAccessCodes,
+  getAdminAccessPolicy,
+  saveAdminAccessPolicy,
+  type AccessConfig,
 } from '../domain/backendClient';
 
-type AdminPage = 'users' | 'api-config';
+type AdminPage = 'users' | 'api-config' | 'access-codes';
 
 const ADMIN_TOKEN_KEY = 'the-chosen-one:admin-token';
 
@@ -20,6 +28,14 @@ const password = ref('');
 const token = ref(loadToken());
 const activePage = ref<AdminPage>(getAdminPageFromHash());
 const users = ref<AdminUserSummary[]>([]);
+const accessCodes = ref<AccessCodeView[]>([]);
+const generatedCodes = ref<string[]>([]);
+const batchSize = ref<10 | 50 | 100>(10);
+const codeStatusFilter = ref('');
+const codeQuery = ref('');
+const orderReference = ref('');
+const accessPolicy = ref<AccessConfig>({ maxUses: 10, validDays: 7 });
+const selectedCodeIds = ref<string[]>([]);
 const aiConfig = ref<AiConfigView>({
   provider: 'deepseek',
   baseUrl: 'https://api.deepseek.com/chat/completions',
@@ -74,11 +90,9 @@ async function loadDashboard(): Promise<void> {
   error.value = '';
 
   try {
-    const [userRows, config] = await Promise.all([
-      getAdminUsers(token.value),
-      getAiConfig(token.value),
-    ]);
+    const [userRows, config, policy] = await Promise.all([getAdminUsers(token.value), getAiConfig(token.value), getAdminAccessPolicy(token.value)]);
     users.value = userRows;
+    accessPolicy.value = policy;
     aiConfig.value = {
       provider: config.provider || 'deepseek',
       baseUrl: config.baseUrl || 'https://api.deepseek.com/chat/completions',
@@ -93,12 +107,93 @@ async function loadDashboard(): Promise<void> {
         updatedAt: config.vision.updatedAt,
       },
     };
+    if (activePage.value === 'access-codes') await loadAccessCodes();
   } catch (caught) {
     error.value = caught instanceof Error ? caught.message : '后台数据加载失败';
-    if (String(error.value).includes('Unauthorized')) logout();
+    if ((caught && typeof caught === 'object' && 'status' in caught && Number(caught.status) === 401) || String(error.value).includes('Unauthorized')) logout();
   } finally {
     isLoading.value = false;
   }
+}
+
+async function saveAccessPolicy(): Promise<void> {
+  if (!token.value) return;
+  isLoading.value = true; error.value = ''; message.value = '';
+  try { accessPolicy.value = await saveAdminAccessPolicy(token.value, accessPolicy.value); message.value = '权益配置已保存，新生成的体验码将使用新配置'; }
+  catch (caught) { error.value = caught instanceof Error ? caught.message : '权益配置保存失败'; }
+  finally { isLoading.value = false; }
+}
+
+async function loadAccessCodes(): Promise<void> {
+  if (!token.value) return;
+  try {
+    accessCodes.value = await listAdminAccessCodes(token.value, { status: codeStatusFilter.value || undefined, query: codeQuery.value || undefined });
+    selectedCodeIds.value = [];
+  } catch (caught) {
+    error.value = caught instanceof Error ? caught.message : '体验码加载失败';
+    if ((caught && typeof caught === 'object' && 'status' in caught && Number(caught.status) === 401) || error.value.toLowerCase().includes('unauthorized') || error.value.includes('未授权')) logout();
+  }
+}
+
+const allCodesSelected = computed(() => accessCodes.value.length > 0 && accessCodes.value.every((code) => selectedCodeIds.value.includes(code.id)));
+
+function toggleAllCodes(): void {
+  selectedCodeIds.value = allCodesSelected.value ? [] : accessCodes.value.map((code) => code.id);
+}
+
+function toggleCodeSelection(id: string): void {
+  selectedCodeIds.value = selectedCodeIds.value.includes(id)
+    ? selectedCodeIds.value.filter((selected) => selected !== id)
+    : [...selectedCodeIds.value, id];
+}
+
+async function deleteSelectedCodes(): Promise<void> {
+  if (!token.value || selectedCodeIds.value.length === 0 || !window.confirm(`确认删除选中的 ${selectedCodeIds.value.length} 个体验码吗？此操作不可恢复。`)) return;
+  isLoading.value = true; error.value = ''; message.value = '';
+  try { const count = await deleteAdminAccessCodes(token.value, selectedCodeIds.value); message.value = `已删除 ${count} 个体验码`; await loadAccessCodes(); }
+  catch (caught) { error.value = caught instanceof Error ? caught.message : '删除失败，请稍后重试'; }
+  finally { isLoading.value = false; }
+}
+
+function exportCodesCsv(): void {
+  const headers = ['体验码', '状态', '已用次数', '总次数', '剩余次数', '有效期至', '订单号', '备注'];
+  const rows = accessCodes.value.map((code) => [code.code || `…${code.codeSuffix}`, formatCodeStatus(code.status), code.usedCount, code.maxUses, code.remainingUses, code.expiresAt || '', code.orderReference, code.note]);
+  const csv = '\ufeff' + [headers, ...rows].map((row) => row.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const anchor = document.createElement('a'); anchor.href = url; anchor.download = `access-codes-${new Date().toISOString().slice(0, 10)}.csv`; anchor.click(); URL.revokeObjectURL(url);
+}
+
+async function generateBatch(): Promise<void> {
+  if (!token.value) return;
+  isLoading.value = true; error.value = ''; message.value = '';
+  try { const batch = await createAdminAccessCodeBatch(token.value, batchSize.value); generatedCodes.value = batch.codes; message.value = '体验码批次已生成'; await loadDashboard(); }
+  catch { error.value = '生成失败，请稍后重试'; }
+  finally { isLoading.value = false; }
+}
+
+async function mutateCode(code: AccessCodeView, action: 'issue' | 'disable' | 'resetBinding' | 'adjustQuota'): Promise<void> {
+  if (!token.value) return;
+  if (!window.confirm('确认执行此操作吗？')) return;
+  isLoading.value = true; error.value = ''; message.value = '';
+  try {
+    const payload: Parameters<typeof adjustAdminAccessCode>[2] = { action };
+    if (action === 'issue' && orderReference.value.trim()) payload.orderReference = orderReference.value.trim();
+    if (action === 'adjustQuota') payload.delta = 1;
+    await adjustAdminAccessCode(token.value, code.id, payload);
+    message.value = '操作成功';
+    await loadDashboard();
+  } catch { error.value = '操作失败，请稍后重试'; }
+  finally { isLoading.value = false; }
+}
+
+async function copyCode(code: AccessCodeView): Promise<void> {
+  if (!code.code || (code.status !== 'available' && code.status !== 'issued')) return;
+  try { await navigator.clipboard.writeText(code.code); message.value = '体验码已复制'; error.value = ''; }
+  catch { error.value = '复制失败，请手动复制'; }
+}
+
+function formatCodeStatus(status: string): string {
+  return ({ available: '可用', issued: '已发放', active: '使用中', disabled: '已禁用', exhausted: '已用尽', expired: '已过期' } as Record<string, string>)[status] || status;
 }
 
 async function submitAiConfig(): Promise<void> {
@@ -161,7 +256,8 @@ function logout(): void {
 
 function setAdminPage(page: AdminPage): void {
   activePage.value = page;
-  window.location.hash = page === 'api-config' ? '#/admin/api-config' : '#/admin/users';
+  window.location.hash = page === 'api-config' ? '#/admin/api-config' : page === 'access-codes' ? '#/admin/access-codes' : '#/admin/users';
+  if (token.value && page === 'access-codes') void loadAccessCodes();
 }
 
 function loadToken(): string {
@@ -173,7 +269,9 @@ function loadToken(): string {
 }
 
 function getAdminPageFromHash(): AdminPage {
-  return window.location.hash === '#/admin/api-config' ? 'api-config' : 'users';
+  if (window.location.hash === '#/admin/api-config') return 'api-config';
+  if (window.location.hash === '#/admin/access-codes') return 'access-codes';
+  return 'users';
 }
 
 function formatTime(value?: string): string {
@@ -247,6 +345,9 @@ function formatCalendar(value?: string): string {
           <Users :size="18" />
           <span>用户查询</span>
         </button>
+        <button type="button" class="admin-nav-item" :class="{ active: activePage === 'access-codes' }" @click="setAdminPage('access-codes')">
+          <KeyRound :size="18" /><span>体验码管理</span>
+        </button>
         <button
           type="button"
           class="admin-nav-item"
@@ -267,7 +368,7 @@ function formatCalendar(value?: string): string {
         <header class="admin-content-head">
           <div>
             <p class="eyebrow">CONTROL PANEL</p>
-            <h2>{{ activePage === 'users' ? '用户查询' : 'API 配置' }}</h2>
+            <h2>{{ activePage === 'users' ? '用户查询' : activePage === 'api-config' ? 'API 配置' : '体验码管理' }}</h2>
           </div>
           <button type="button" class="secondary-action" :disabled="isLoading" @click="loadDashboard">
             <RefreshCw :size="17" :class="{ 'spin-icon': isLoading }" />
@@ -346,7 +447,7 @@ function formatCalendar(value?: string): string {
           </div>
         </section>
 
-        <section v-else class="admin-page api-config-page">
+        <section v-else-if="activePage === 'api-config'" class="admin-page api-config-page">
           <form class="api-config-form" @submit.prevent="submitAiConfig">
             <div class="api-config-group">
               <h3>默认文本模型</h3>
@@ -395,7 +496,80 @@ function formatCalendar(value?: string): string {
             <span>更新时间：{{ formatTime(aiConfig.updatedAt) }}</span>
           </div>
         </section>
+        <section v-else class="admin-page access-codes-page">
+          <section class="admin-policy-panel">
+            <div class="admin-table-title"><ShieldCheck :size="18" /><span>体验权益配置</span></div>
+            <form class="admin-code-toolbar" @submit.prevent="saveAccessPolicy">
+              <label>有效期（天）<input v-model.number="accessPolicy.validDays" type="number" min="1" max="3650" required /></label>
+              <label>每码次数<input v-model.number="accessPolicy.maxUses" type="number" min="1" max="1000" required /></label>
+              <button type="submit" class="primary-action" :disabled="isLoading"><Save :size="16" /><span>保存权益配置</span></button>
+            </form>
+            <p class="admin-policy-hint">只影响之后新生成的体验码，已有体验码保持原配置。</p>
+          </section>
+          <div class="admin-table-wrap">
+            <div class="admin-table-title"><KeyRound :size="18" /><span>生成体验码</span></div>
+            <div class="admin-code-toolbar">
+              <button v-for="size in [10, 50, 100]" :key="size" type="button" class="secondary-action" :data-batch-size="size" :class="{ active: batchSize === size }" @click="batchSize = size as 10 | 50 | 100">{{ size }}</button>
+              <button type="button" class="primary-action" data-action="generate-batch" :disabled="isLoading" @click="generateBatch"><Plus :size="16" /><span>生成批次</span></button>
+            </div>
+            <div v-if="generatedCodes.length" class="generated-code-list">
+              <strong>本次生成</strong>
+              <code v-for="generatedCode in generatedCodes" :key="generatedCode">{{ generatedCode }}</code>
+            </div>
+            <div class="admin-code-toolbar">
+              <input v-model="codeQuery" data-filter="query" placeholder="搜索后缀 / 订单号" />
+              <select v-model="codeStatusFilter" data-filter="status"><option value="">全部状态</option><option value="available">可用</option><option value="issued">已发放</option><option value="disabled">已禁用</option><option value="exhausted">已用尽</option><option value="expired">已过期</option></select>
+              <input v-model="orderReference" data-order-reference placeholder="订单号（发放时可选）" />
+              <button type="button" class="secondary-action" data-action="filter" @click="loadDashboard">筛选</button>
+              <button type="button" class="secondary-action" data-action="export-csv" :disabled="!accessCodes.length" @click="exportCodesCsv">导出 CSV</button>
+              <button type="button" class="table-action danger" data-action="delete-selected" :disabled="!selectedCodeIds.length || isLoading" @click="deleteSelectedCodes">删除选中（{{ selectedCodeIds.length }}）</button>
+            </div>
+            <table class="admin-table"><thead><tr><th><input type="checkbox" :checked="allCodesSelected" aria-label="全选体验码" @change="toggleAllCodes" /></th><th>体验码</th><th>状态</th><th>配额</th><th>日期</th><th>订单号</th><th>操作</th></tr></thead>
+              <tbody><tr v-for="code in accessCodes" :key="code.id"><td><input type="checkbox" :checked="selectedCodeIds.includes(code.id)" :aria-label="`选择体验码 ${code.codeSuffix}`" @change="toggleCodeSelection(code.id)" /></td><td>{{ (code.status === 'available' || code.status === 'issued') && code.code ? code.code : `…${code.codeSuffix}` }} <button v-if="code.code && (code.status === 'available' || code.status === 'issued')" type="button" class="table-action" data-action="copy" @click="copyCode(code)">复制</button></td><td>{{ formatCodeStatus(code.status) }}</td><td>{{ code.usedCount }}/{{ code.maxUses }}（余 {{ code.remainingUses }}）</td><td>{{ formatTime(code.issuedAt || code.createdAt) }}<br>{{ formatTime(code.expiresAt || undefined) }}</td><td>{{ code.orderReference || '-' }}</td><td><button v-if="code.status === 'available'" type="button" class="table-action" data-action="issue" :disabled="isLoading" @click="mutateCode(code, 'issue')">发放</button><button v-if="code.status !== 'disabled'" type="button" class="table-action danger" data-action="disable" :disabled="isLoading"><Ban :size="14" />禁用</button><button v-if="code.status === 'issued' || code.status === 'active'" type="button" class="table-action" data-action="reset-binding" :disabled="isLoading" @click="mutateCode(code, 'resetBinding')"><RotateCcw :size="14" />重置绑定</button><button v-if="code.status === 'available' || code.status === 'issued' || code.status === 'active'" type="button" class="table-action" data-action="add-quota" :disabled="isLoading" @click="mutateCode(code, 'adjustQuota')">+1 配额</button></td></tr><tr v-if="accessCodes.length === 0"><td colspan="7">暂无体验码</td></tr></tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </section>
   </main>
 </template>
+
+<style scoped>
+.admin-code-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 14px 0;
+}
+
+.admin-code-toolbar input,
+.admin-code-toolbar select {
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #d8d3ca;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.admin-code-toolbar .active {
+  border-color: #9f3028;
+  color: #9f3028;
+}
+
+.generated-code-list {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  margin: 12px 0 18px;
+  padding: 12px;
+  overflow: auto;
+  border-left: 3px solid #9f3028;
+  background: #f7f6f2;
+}
+
+.generated-code-list code {
+  overflow-wrap: anywhere;
+}
+</style>

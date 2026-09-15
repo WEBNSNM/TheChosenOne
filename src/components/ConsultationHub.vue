@@ -14,15 +14,18 @@ import { FileText } from 'lucide-vue-next';
 import UserProfileFields from './UserProfileFields.vue';
 import {
   buildConsultationMessages,
-  consultationScenes,
+  buildGrowthReportInput,
   type ConsultationSceneId,
+  getAvailableConsultationScenes,
+  getMissingGrowthProfileFields,
   getChartMissingHint,
+  isGrowthProfileComplete,
   isUserProfileFilled,
   isChartComplete,
   sceneRequiresUserProfile,
   type UserProfile,
 } from '../domain/consultation';
-import { submitAiChat } from '../domain/backendClient';
+import { BackendClientError, generateReport, submitAiChat } from '../domain/backendClient';
 import type { DeepSeekMessage } from '../domain/deepseekClient';
 import type { LotteryInput, LuckyLotteryResult } from '../domain/lottery';
 
@@ -30,24 +33,29 @@ const props = defineProps<{
   result: LuckyLotteryResult | null;
   form: LotteryInput;
   userProfile: UserProfile;
+  locked?: boolean;
+  commercialMode?: boolean;
 }>();
 
 const emit = defineEmits<{
   'update:userProfile': [value: UserProfile];
   requestSetup: [options: { includeProfile: boolean; profileRequired: boolean }];
+  reportGenerated: [];
 }>();
 
-const selectedSceneId = ref<ConsultationSceneId>(consultationScenes[0].id);
-const userText = ref(consultationScenes[0].starter);
+const availableScenes = computed(() => getAvailableConsultationScenes(Boolean(props.commercialMode)));
+const selectedSceneId = ref<ConsultationSceneId>('premium-chart-report');
+const userText = ref(getAvailableConsultationScenes(Boolean(props.commercialMode))[0].starter);
 const screenshotText = ref('');
 const answer = ref('');
 const error = ref('');
-const profileOpen = ref(false);
+const profileOpen = ref(Boolean(props.commercialMode));
 const isLoading = ref(false);
 const imagePreviewUrl = ref('');
 const imageDataUrl = ref('');
 const imageName = ref('');
 let abortController: AbortController | undefined;
+let pendingIdempotencyKey: string | undefined;
 const answerTime = ref('');
 
 function parseMarkdown(raw: string): string {
@@ -99,7 +107,7 @@ function inlineMarkdown(text: string): string {
 const renderedAnswer = computed(() => answer.value ? parseMarkdown(answer.value) : '');
 
 const activeScene = computed(() => {
-  return consultationScenes.find((scene) => scene.id === selectedSceneId.value) ?? consultationScenes[0];
+  return availableScenes.value.find((scene) => scene.id === selectedSceneId.value) ?? availableScenes.value[0];
 });
 
 const profileProxy = computed({
@@ -144,6 +152,45 @@ function selectScene(sceneId: ConsultationSceneId): void {
 
 async function submitConsultation(): Promise<void> {
   if (isLoading.value) return;
+  if (props.locked) {
+    error.value = '当前访问权益不可用，暂时无法生成解读。';
+    return;
+  }
+
+  if (props.commercialMode) {
+    if (!isGrowthProfileComplete(props.userProfile)) {
+      const missing = getMissingGrowthProfileFields(props.userProfile);
+      error.value = `请先补充${missing.join('、')}，再生成个人成长洞察报告。`;
+      profileOpen.value = true;
+      return;
+    }
+
+    isLoading.value = true;
+    answer.value = '';
+    error.value = '';
+    try {
+      answer.value = await generateReport({
+        idempotencyKey: pendingIdempotencyKey ?? createChatIdempotencyKey(),
+        ...buildGrowthReportInput({
+          result: props.result,
+          form: props.form,
+          userProfile: {
+            ...props.userProfile,
+            customNote: userText.value.trim() === activeScene.value.starter ? props.userProfile.customNote : userText.value,
+          },
+        }),
+      });
+      pendingIdempotencyKey = undefined;
+      emit('reportGenerated');
+      answerTime.value = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    } catch (caught) {
+      if (!isRetriableChatFailure(caught)) pendingIdempotencyKey = undefined;
+      error.value = caught instanceof Error ? caught.message : '报告生成失败，请稍后重试。';
+    } finally {
+      isLoading.value = false;
+    }
+    return;
+  }
 
   if (!isChartComplete(props.form) || !props.result) {
     error.value = getChartMissingHint(props.form) || '请先在灵感入口生成命盘数据。';
@@ -179,13 +226,18 @@ async function submitConsultation(): Promise<void> {
     });
 
     answer.value = await submitAiChat({
+      idempotencyKey: pendingIdempotencyKey ?? createChatIdempotencyKey(),
       messages: withScreenshotImage(messages),
     });
+    pendingIdempotencyKey = undefined;
+    emit('reportGenerated');
     answerTime.value = new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   } catch (caught) {
     if (caught instanceof DOMException && caught.name === 'AbortError') {
+      pendingIdempotencyKey = undefined;
       error.value = '已停止本次请求。';
     } else {
+      if (!isRetriableChatFailure(caught)) pendingIdempotencyKey = undefined;
       error.value = caught instanceof Error
         ? caught.message
         : 'DeepSeek 调用失败。浏览器直连可能受跨域策略影响，正式版本建议走后端中转。';
@@ -194,6 +246,20 @@ async function submitConsultation(): Promise<void> {
     isLoading.value = false;
     abortController = undefined;
   }
+}
+
+function createChatIdempotencyKey(): string {
+  const random = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+  const idempotencyKey = `chat_${random}`;
+  pendingIdempotencyKey = idempotencyKey;
+  return idempotencyKey;
+}
+
+function isRetriableChatFailure(error: unknown): boolean {
+  if (!(error instanceof BackendClientError)) return true;
+  return error.status === 408 || error.status === 409 || error.status === 429 || error.status >= 500;
 }
 
 function stopConsultation(): void {
@@ -275,13 +341,15 @@ function readFileAsDataUrl(file: File): Promise<string> {
     <div class="consultation-head">
       <div>
         <p class="eyebrow">AI CONSULTATION</p>
-        <h2>深度咨询场景</h2>
+        <h2>{{ props.commercialMode ? '个人成长洞察' : '深度咨询场景' }}</h2>
       </div>
       <Bot :size="25" />
     </div>
 
     <p class="consultation-copy">
-      选择一个主题，结合你的命盘与今日流日继续追问。当前为个人测试入口，正式使用建议通过安全服务连接模型。
+      {{ props.commercialMode
+        ? '以你主动填写的职业、关注重点、目标和当前困难为主要依据，传统历法文化背景信息仅作可选文化参考。'
+        : '选择一个主题，结合你的命盘与今日流日继续追问。当前为个人测试入口，正式使用建议通过安全服务连接模型。' }}
     </p>
 
     <button
@@ -291,8 +359,8 @@ function readFileAsDataUrl(file: File): Promise<string> {
       @click="profileOpen = !profileOpen"
     >
       <User :size="17" />
-      <span>个人背景</span>
-      <small>{{ userProfile.nickname || '选填，提升精准度' }}</small>
+      <span style="white-space: nowrap;">个人背景</span>
+      <small>{{ props.commercialMode ? '职业、关注、目标与困难为必填' : (userProfile.nickname || '选填，提升精准度') }}</small>
       <ChevronDown :size="18" :class="{ rotated: profileOpen }" />
     </button>
 
@@ -301,7 +369,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
     <div class="consultation-layout">
       <nav class="scene-tabs" aria-label="咨询场景">
         <button
-          v-for="scene in consultationScenes"
+          v-for="scene in availableScenes"
           :key="scene.id"
           type="button"
           :class="{ active: scene.id === selectedSceneId }"
@@ -360,7 +428,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
         </label>
 
         <div class="consultation-actions">
-          <button type="button" class="primary-action consult-submit" :disabled="isLoading" @click="submitConsultation">
+          <button type="button" class="primary-action consult-submit" :disabled="isLoading || props.locked" @click="submitConsultation">
             <LoaderCircle v-if="isLoading" :size="18" class="spin-icon" />
             <Send v-else :size="18" />
             <span>{{ isLoading ? '解读中' : '开始解读' }}</span>
@@ -386,8 +454,13 @@ function readFileAsDataUrl(file: File): Promise<string> {
         </div>
 
         <div v-else class="consultation-empty">
-          选择场景、填入问题后，即可生成一份更像咨询服务的深度解读。
+          {{ props.commercialMode
+            ? '补充现实背景后，即可生成包含能力倾向、阶段观察与行动建议的报告。'
+            : '选择场景、填入问题后，即可生成一份更像咨询服务的深度解读。' }}
         </div>
+        <p v-if="props.commercialMode" class="inline-notice">
+          本报告用于个人成长反思与行动规划；传统历法信息仅作文化参考，不构成确定性预测，也不替代医疗、法律或投资等专业建议。
+        </p>
       </article>
     </div>
   </section>

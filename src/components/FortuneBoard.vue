@@ -53,13 +53,13 @@ const hasResult = computed(() => Boolean(props.result));
     <div class="insight-strip">
       <div>
         <CircleGauge :size="17" />
-        <span>{{ hasResult ? result!.summary : '填写命盘后生成你的专属灵感' }}</span>
+        <span>{{ hasResult ? result!.summary : '填写成长档案后生成你的专属灵感' }}</span>
       </div>
       <div v-if="hasResult" class="element-chips" aria-label="喜用五行">
         <span v-for="element in result!.luckyElements" :key="element">{{ element }}</span>
       </div>
     </div>
 
-    <p class="fortune-advice">{{ hasResult ? result!.advice : '点击上方「输入/修改命盘」开始' }}</p>
+    <p class="fortune-advice">{{ hasResult ? result!.advice : '点击上方「编辑成长档案」开始' }}</p>
   </section>
 </template>
