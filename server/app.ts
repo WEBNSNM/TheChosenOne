@@ -818,15 +818,7 @@ function buildGrowthReportRewriteMessages(
 export function hasUnsafeReportContent(content: string, input?: { calendarContext?: Record<string, unknown> }): boolean {
   const contentWithoutDisclaimer = content.replace(GROWTH_REPORT_DISCLAIMER, '');
   if (/彩票|中奖号码|中奖|下注|博彩建议|稳赚|必中|保证收益|必然发财|一定会发生|一定会中奖|注定会|灾祸|不用咨询(?:医生|律师|专业人士)|无需咨询(?:医生|律师|专业人士)|替代(?:医疗|法律|投资|医生|律师)|直接按报告(?:治疗|用药|投资|买入|卖出)/.test(contentWithoutDisclaimer)) return true;
-  if (/命盘|日主|吉凶|纳音|十神|藏干|大运|birthPillars|dayMaster|currentCycle|fortune/i.test(contentWithoutDisclaimer)) return true;
-  const headings = [...content.matchAll(/^#{1,6}\s+([^\r\n]+?)\s*#*\s*$/gm)]
-    .map((match) => normalizeReportHeading(match[1]));
-  let requiredHeadingIndex = 0;
-  for (const heading of headings) {
-    if (heading === GROWTH_REPORT_REQUIRED_HEADINGS[requiredHeadingIndex]) requiredHeadingIndex += 1;
-  }
-  if (requiredHeadingIndex !== GROWTH_REPORT_REQUIRED_HEADINGS.length) return true;
-  if (!content.includes(GROWTH_REPORT_DISCLAIMER)) return true;
+  if (/ignore\s+(?:all\s+)?previous\s+instructions|忽略(?:之前|以上|所有)指令|system\s+prompt|系统提示词|开发者消息|reveal\s+(?:the\s+)?prompt/i.test(contentWithoutDisclaimer)) return true;
 
   return false;
 }
