@@ -1082,10 +1082,10 @@ async function callModel(
 }
 
 function generateAccessCode(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
   let body = '';
   for (const byte of bytes) body += ACCESS_CODE_ALPHABET[byte % ACCESS_CODE_ALPHABET.length];
-  return `TCO-${body.slice(0, 4)}-${body.slice(4, 8)}-${body.slice(8, 12)}`;
+  return body;
 }
 
 function normalizeAccessCode(value: unknown): string | null {

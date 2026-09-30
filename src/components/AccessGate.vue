@@ -14,6 +14,32 @@ const code = ref('');
 const isRedeeming = ref(false);
 const error = ref('');
 
+function isShortCode(value: string): boolean {
+  return /^[A-Za-z0-9]{4}$/.test(value.trim());
+}
+
+function fillClipboardText(value: string): void {
+  const candidate = value.trim();
+  if (isShortCode(candidate)) code.value = candidate;
+}
+
+function handlePaste(event: ClipboardEvent): void {
+  const value = event.clipboardData?.getData('text') ?? '';
+  if (isShortCode(value)) {
+    event.preventDefault();
+    fillClipboardText(value);
+  }
+}
+
+async function handleInputFocus(): Promise<void> {
+  try {
+    const value = await navigator.clipboard?.readText();
+    if (value) fillClipboardText(value);
+  } catch {
+    // Clipboard permission is optional; normal paste remains supported.
+  }
+}
+
 async function submitRedeem(): Promise<void> {
   const value = code.value.trim();
   if (!value || isRedeeming.value) return;
@@ -55,9 +81,13 @@ async function submitRedeem(): Promise<void> {
             v-model="code"
             type="password"
             autocomplete="one-time-code"
-            placeholder="输入兑换码"
+            maxlength="4"
+            inputmode="text"
+            placeholder="输入4位兑换码"
             aria-describedby="access-code-help access-code-error"
             :aria-invalid="Boolean(error)"
+            @focus="handleInputFocus"
+            @paste="handlePaste"
           />
           <button type="submit" :disabled="isRedeeming || !code.trim()">
             {{ isRedeeming ? '兑换中…' : '立即兑换' }}

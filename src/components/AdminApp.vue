@@ -192,6 +192,21 @@ async function copyCode(code: AccessCodeView): Promise<void> {
   catch { error.value = '复制失败，请手动复制'; }
 }
 
+async function copyShippingMessage(code: AccessCodeView): Promise<void> {
+  if (!code.code || (code.status !== 'available' && code.status !== 'issued')) return;
+  const shippingMessage = `【自动发货链接】
+https://xxymj.indevs.in
+
+【自动发货备注说明】
+验证码：${code.code}
+
+最上面直接点开链接即可开始测试
+有任何问题请第一时间联系客服帮您解决~
+祝各位宝子生活愉快！`;
+  try { await navigator.clipboard.writeText(shippingMessage); message.value = '发货文案已复制'; error.value = ''; }
+  catch { error.value = '复制失败，请手动复制'; }
+}
+
 function formatCodeStatus(status: string): string {
   return ({ available: '可用', issued: '已发放', active: '使用中', disabled: '已禁用', exhausted: '已用尽', expired: '已过期' } as Record<string, string>)[status] || status;
 }
@@ -525,7 +540,7 @@ function formatCalendar(value?: string): string {
               <button type="button" class="table-action danger" data-action="delete-selected" :disabled="!selectedCodeIds.length || isLoading" @click="deleteSelectedCodes">删除选中（{{ selectedCodeIds.length }}）</button>
             </div>
             <table class="admin-table"><thead><tr><th><input type="checkbox" :checked="allCodesSelected" aria-label="全选体验码" @change="toggleAllCodes" /></th><th>体验码</th><th>状态</th><th>配额</th><th>日期</th><th>订单号</th><th>操作</th></tr></thead>
-              <tbody><tr v-for="code in accessCodes" :key="code.id"><td><input type="checkbox" :checked="selectedCodeIds.includes(code.id)" :aria-label="`选择体验码 ${code.codeSuffix}`" @change="toggleCodeSelection(code.id)" /></td><td>{{ (code.status === 'available' || code.status === 'issued') && code.code ? code.code : `…${code.codeSuffix}` }} <button v-if="code.code && (code.status === 'available' || code.status === 'issued')" type="button" class="table-action" data-action="copy" @click="copyCode(code)">复制</button></td><td>{{ formatCodeStatus(code.status) }}</td><td>{{ code.usedCount }}/{{ code.maxUses }}（余 {{ code.remainingUses }}）</td><td>{{ formatTime(code.issuedAt || code.createdAt) }}<br>{{ formatTime(code.expiresAt || undefined) }}</td><td>{{ code.orderReference || '-' }}</td><td><button v-if="code.status === 'available'" type="button" class="table-action" data-action="issue" :disabled="isLoading" @click="mutateCode(code, 'issue')">发放</button><button v-if="code.status !== 'disabled'" type="button" class="table-action danger" data-action="disable" :disabled="isLoading"><Ban :size="14" />禁用</button><button v-if="code.status === 'issued' || code.status === 'active'" type="button" class="table-action" data-action="reset-binding" :disabled="isLoading" @click="mutateCode(code, 'resetBinding')"><RotateCcw :size="14" />重置绑定</button><button v-if="code.status === 'available' || code.status === 'issued' || code.status === 'active'" type="button" class="table-action" data-action="add-quota" :disabled="isLoading" @click="mutateCode(code, 'adjustQuota')">+1 配额</button></td></tr><tr v-if="accessCodes.length === 0"><td colspan="7">暂无体验码</td></tr></tbody>
+              <tbody><tr v-for="code in accessCodes" :key="code.id"><td><input type="checkbox" :checked="selectedCodeIds.includes(code.id)" :aria-label="`选择体验码 ${code.codeSuffix}`" @change="toggleCodeSelection(code.id)" /></td><td>{{ (code.status === 'available' || code.status === 'issued') && code.code ? code.code : `…${code.codeSuffix}` }} <button v-if="code.code && (code.status === 'available' || code.status === 'issued')" type="button" class="table-action" data-action="copy" @click="copyCode(code)">复制</button> <button v-if="code.code && (code.status === 'available' || code.status === 'issued')" type="button" class="table-action" data-action="copy-shipping" @click="copyShippingMessage(code)">复制发货文案</button></td><td>{{ formatCodeStatus(code.status) }}</td><td>{{ code.usedCount }}/{{ code.maxUses }}（余 {{ code.remainingUses }}）</td><td>{{ formatTime(code.issuedAt || code.createdAt) }}<br>{{ formatTime(code.expiresAt || undefined) }}</td><td>{{ code.orderReference || '-' }}</td><td><button v-if="code.status === 'available'" type="button" class="table-action" data-action="issue" :disabled="isLoading" @click="mutateCode(code, 'issue')">发放</button><button v-if="code.status !== 'disabled'" type="button" class="table-action danger" data-action="disable" :disabled="isLoading"><Ban :size="14" />禁用</button><button v-if="code.status === 'issued' || code.status === 'active'" type="button" class="table-action" data-action="reset-binding" :disabled="isLoading" @click="mutateCode(code, 'resetBinding')"><RotateCcw :size="14" />重置绑定</button><button v-if="code.status === 'available' || code.status === 'issued' || code.status === 'active'" type="button" class="table-action" data-action="add-quota" :disabled="isLoading" @click="mutateCode(code, 'adjustQuota')">+1 配额</button></td></tr><tr v-if="accessCodes.length === 0"><td colspan="7">暂无体验码</td></tr></tbody>
             </table>
           </div>
         </section>

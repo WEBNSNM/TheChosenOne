@@ -22,18 +22,13 @@ export interface DigestAdapter {
   hmacSha256(secret: string, message: string): Promise<string> | string;
 }
 
-const CODE_PREFIX = 'TCO';
-const CODE_BODY_PATTERN = /^[A-Z0-9]{12}$/;
+const SHORT_CODE_PATTERN = /^[A-Z0-9]{4}$/;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
 
 export function normalizeRedemptionCode(input: string): string | null {
   const compact = input.trim().toUpperCase().replace(/[\s-]+/g, '');
-  const hasPrefix = compact.startsWith(CODE_PREFIX) && compact.length === CODE_PREFIX.length + 12;
-  const body = hasPrefix ? compact.slice(CODE_PREFIX.length) : compact;
-
-  if (!CODE_BODY_PATTERN.test(body)) return null;
-
-  return `${CODE_PREFIX}-${body.slice(0, 4)}-${body.slice(4, 8)}-${body.slice(8, 12)}`;
+  if (SHORT_CODE_PATTERN.test(compact)) return compact;
+  return null;
 }
 
 export function isValidRedemptionCode(input: string): boolean {
