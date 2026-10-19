@@ -1,0 +1,25 @@
+:root { color-scheme: dark; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; background: #050709; color: #eef5f8; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto; }
+#fluid { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+header, main, footer { position: relative; }
+header { display: flex; align-items: center; justify-content: space-between; padding: 30px 5vw; }
+.brand { color: inherit; text-decoration: none; font-weight: 600; letter-spacing: .12em; }
+.brand span { margin-left: 12px; font-size: 10px; color: #7e909d; letter-spacing: .2em; }
+.badge { border: 1px solid #ffffff26; border-radius: 30px; padding: 7px 12px; font-size: 10px; color: #a4bbc7; letter-spacing: .08em; }
+main { display: grid; place-items: center; min-height: 350px; padding: 50px 24px; touch-action: none; user-select: none; }
+.hero { text-align: center; mix-blend-mode: difference; transform: translateY(-2vh); pointer-events: none; }
+.eyebrow { color: #8d9ca8; font-size: 10px; letter-spacing: .3em; margin: 0 0 30px; }
+h1 { font-size: clamp(52px, 8vw, 120px); letter-spacing: -.055em; line-height: 1.2; margin: 0; font-weight: 600; }
+h1 span { color: #a4dbed; }
+.subtitle { margin-top: 28px; font-size: 13px; letter-spacing: .2em; color: #bccbd3; line-height: 2; }
+footer { text-align: center; padding: 24px 20px 30px; }
+footer p { font-size: 11px; letter-spacing: .12em; color: #9badb9; }
+i { font-style: normal; margin: 0 10px; color: #607782; }
+.controls { display: flex; justify-content: center; gap: 10px; margin: 22px 0 26px; }
+button { font: inherit; font-size: 12px; color: #e2edf2; background: #ffffff09; border: 1px solid #ffffff30; border-radius: 40px; padding: 12px 21px; cursor: pointer; backdrop-filter: blur(12px); }
+button:hover { background: #ffffff20; border-color: #ffffff70; }
+button:focus-visible, a:focus-visible { outline: 2px solid #a4dbed; outline-offset: 5px; }
+button:disabled { opacity: .5; cursor: default; }
+small { font-size: 8px; letter-spacing: .2em; color: #6f8490; }
+@media (max-width: 600px) { header { padding: 24px 20px; } .brand span { display: none; } .eyebrow { font-size: 8px; letter-spacing: .15em; } .subtitle { font-size: 11px; letter-spacing: .08em; } h1 { font-size: 60px; } }

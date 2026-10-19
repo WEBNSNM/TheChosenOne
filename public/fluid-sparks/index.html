@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050709">
+  <title>流光 · WebGL 流体 Demo</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./vendor/fluid.js" defer></script>
+  <script src="./demo.js" defer></script>
+</head>
+<body>
+  <canvas id="fluid" aria-hidden="true"></canvas>
+  <header><a class="brand" href="./">流光 <span>FLUID LAB</span></a><span class="badge" id="status" role="status">正在初始化</span></header>
+  <main>
+    <div class="hero">
+      <p class="eyebrow">A LITTLE CHAOS. A LOT OF COLOR.</p>
+      <h1>让灵感<span>流动。</span></h1>
+      <p class="subtitle">轻触，绽放一束光。拖动，留下你的色彩。</p>
+    </div>
+  </main>
+  <footer>
+    <p>点击爆发 <i>·</i> 按住拖动 <i>·</i> 支持触屏</p>
+    <div class="controls"><button id="burst" type="button">再绽放一次 ↗</button><button id="pause" type="button" aria-pressed="false">暂停动画</button></div>
+    <small>WEBGL FLUID SIMULATION · BLOOM + SUNRAYS</small>
+  </footer>
+</body>
+</html>
